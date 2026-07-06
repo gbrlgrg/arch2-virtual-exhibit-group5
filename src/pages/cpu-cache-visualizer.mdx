@@ -1,0 +1,12 @@
+---
+layout: ../layouts/ExhibitLayout.astro
+title: "Ca-Ching! - The CPU Cache Visualizer"
+description: "An interactive virtual exhibit demonstrating how a direct-mapped CPU cache processes memory accesses."
+author: "Barreo, Carlo Gabriel; Gregorio, Gaibril Kyle; Eleydo, Renzel Vince; Leano, Jeremy; Rebudiao, Daniel Christian"
+readingTime: "10 minutes"
+---
+
+import CacheSimulator from "../components/CacheSimulator";
+import "../styles/project.css";
+
+<CacheSimulator client:load />
