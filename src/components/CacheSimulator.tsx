@@ -77,10 +77,9 @@ export default function Page() {
               CPU Cache Visualizer
             </span>
           </div>
-          <h1 className="text-balance text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
-            Ca-Ching!{' '}
-            <span className="text-cyan-400">— The Cache Visualizer</span>
-          </h1>
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
+            Ca-Ching! <span className="text-cyan-400">— The Cache Visualizer</span>
+          </h2>
           <p className="max-w-2xl text-pretty text-sm leading-relaxed text-slate-400">
             Watch the CPU race against the hardware speed gap. Fetch a memory
             address and see whether it&apos;s a lightning-fast cache hit or a
