@@ -4,48 +4,6 @@ An interactive virtual exhibit demonstrating **Cache Memory Mechanisms (Hits, Mi
 
 ---
 
-# 🚀 Project Structure
-
-Inside the Astro project, you'll find the following folders and files:
-
-```text
-.
-├── astro.config.mjs
-├── package.json
-├── package-lock.json
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── ReactComponent.jsx
-│   │   └── AstroComponent.astro
-│   ├── layouts/
-│   │   └── ExhibitLayout.astro
-│   └── pages/
-│       └── topic_name.mdx
-└── tsconfig.json
-```
-
-Astro looks for `.astro`, `.md`, and `.mdx` files inside the `src/pages/` directory. Each file is automatically exposed as a route based on its filename.
-
-Reusable components are stored in `src/components/`, layouts in `src/layouts/`, and static assets such as images, icons, and fonts are placed in the `public/` directory.
-
----
-
-# 🧞 Commands
-
-Run all commands from the project's root directory.
-
-| Command | Action |
-| :------ | :----- |
-| `npm install` | Installs dependencies |
-| `npm run dev` | Starts the local development server at `localhost:4321` |
-| `npm run build` | Builds the production site into `dist/` |
-| `npm run preview` | Previews the production build locally |
-| `npm run astro ...` | Runs Astro CLI commands (e.g., `astro add`, `astro check`) |
-| `npm run astro -- --help` | Displays Astro CLI help |
-
----
-
 # 📱 Proposed Virtual Exhibit Design
 
 ## Desktop Views
