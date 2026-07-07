@@ -89,7 +89,7 @@ This allows users to immediately observe how different memory accesses affect ca
 - Address parsing
 - Cache hit/miss simulation
 - References section
-- Disclosure on the use of AI/LLM
+- Disclosure on the use of AI/LLM section
 - Table of Contents integration
 - Responsive exhibit layout
 - Styling fixes and compatibility with the exhibit template
