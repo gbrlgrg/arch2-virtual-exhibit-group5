@@ -1,6 +1,32 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Preflight (from the import above) resets default browser styling for
+   ALL elements, including page content outside the CacheSimulator
+   component (like the References section). These rules restore normal
+   heading/list/paragraph/link appearance for everything OUTSIDE
+   .cache-simulator, without touching anything inside it. */
+h1:not(.cache-simulator *):not(.cache-simulator),
+h2:not(.cache-simulator *):not(.cache-simulator),
+h3:not(.cache-simulator *):not(.cache-simulator) {
+  font-weight: bold;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+h1:not(.cache-simulator *):not(.cache-simulator) { font-size: 2rem; }
+h2:not(.cache-simulator *):not(.cache-simulator) { font-size: 1.5rem; }
+h3:not(.cache-simulator *):not(.cache-simulator) { font-size: 1.25rem; }
+
+p:not(.cache-simulator *):not(.cache-simulator) {
+  margin: 0.75rem 0;
+}
+
+a:not(.cache-simulator *):not(.cache-simulator) {
+  color: revert;
+  text-decoration: underline;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -47,7 +73,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+.cache-simulator {
   color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -83,7 +109,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
+.cache-simulator.dark {
   color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -119,7 +145,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) {
+  .cache-simulator:not(.light) {
     color-scheme: dark;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);

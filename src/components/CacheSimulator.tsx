@@ -59,7 +59,7 @@ export default function Page() {
   )
 
   return (
-    <div className="rounded-xl bg-slate-950 text-slate-100 selection:bg-cyan-500/30 overflow-hidden">
+    <div className="cache-simulator rounded-xl bg-slate-950 text-slate-100 selection:bg-cyan-500/30 overflow-hidden">
       {/* subtle grid glow background */}
       <div
         aria-hidden="true"
