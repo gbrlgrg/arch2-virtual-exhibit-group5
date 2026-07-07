@@ -1,11 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* Preflight (from the import above) resets default browser styling for
-   ALL elements, including page content outside the CacheSimulator
-   component (like the References section). These rules restore normal
-   heading/list/paragraph/link appearance for everything OUTSIDE
-   .cache-simulator, without touching anything inside it. */
 h1:not(.cache-simulator *):not(.cache-simulator),
 h2:not(.cache-simulator *):not(.cache-simulator),
 h3:not(.cache-simulator *):not(.cache-simulator) {
