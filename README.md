@@ -4,7 +4,117 @@ An interactive virtual exhibit demonstrating **Cache Memory Mechanisms (Hits, Mi
 
 ---
 
-# 📱 Proposed Virtual Exhibit Design
+# Development Progress
+
+- **Project Setup**
+  - Setup the Astro virtual exhibit template.
+  - Integrated the React components into the Astro Project.
+  - Configured our own MDX pages for the exhibit.
+  - Imported TailwindCSS and supporting UI libraries for the visualizer.
+
+- **CPU Cache Simulator**
+  - Implemented the CPU Cache Simulator with the following features:
+    - Hexadecimal address input
+    - Address parsing
+    - Cache Lookup simulation
+    - Cache Hit and Cache Miss Visualization
+    - Latency Comparison
+    - Cache Table Visualization
+  - Added animations for the following features:
+    - Calculating
+    - Force Cache Hit
+    - Force Cache Miss
+    - Cache Hit
+    - Cache Miss
+
+- **Exhibit Integration**
+  - Embedded the React simulator into the Astro exhibit page.
+  - Added project metadata:
+    - Title
+    - Author list
+    - Reading time
+  - Ensured the simulator loads correctly using client:load.
+
+- **Documentation**
+  - Added a References section into the exhibit.
+  - Included citations for external resources used in the information.
+
+# Challenges Encountered
+
+## Astro and React Integration
+
+At first, we already set-up our own Astro Project since we didn't know that there was a template for the virtual exhibit so we needed to integrate that project into this template. Additionally, integrating a React application inside Astro MDX pages required understanding of Astro's client directives so we also needed to learn that. It was difficult for us to figure out how to properly integrate it, but we learned that using client:load allowed the simulator to run correctly after the page loaded.
+
+## Styling Conflicts
+
+One of the biggest challenges we faced was resolving the CSS conflicts between the Astro template and the simulator's Tailwind styles. It took us hours to debug and figure out what made these happen: 
+- Background pattern disappearing
+- Incorrect dark backgrounds
+- Redundant CSS styling from our own css file and the global.css file
+- Heading styles changing out of nowhere
+- Layout alignment problems
+
+We resolved them eventually by isolating the simulator's styles and preventing the project-specific CSS from overriding the template's global styles. 
+
+## MDX Components
+
+We experimented with creating an Astro InfoCard component for the other sections of our exhibit, but we eventually resorted to simply using the template's built-in markdown headings and lists because they integrated more properly with the exhibit. 
+
+# Aha Moments / Things Learned
+
+- Astro works well with React as Astro becomes the content framework while React handles the interactive components.
+- We learned all about Astro components and how to use them more cleanly when we integrated it into our project.
+- MDX allows Markdown and React components to be on the same page.
+- Project CSS can unintentionally override the entire exhibit's design.
+- Separating the simulator and visualizer logic from the exhibit content made debugging significantly easier.
+
+# Creative Development
+
+To make CPU cache memory concepts easier to understand for the viewers, we made an exhibit around the idea of showing how a memory request travels. Instead of just showing information, we made the simulator to demonstrate: 
+
+- Address decomposition
+- Cache indexing
+- Cache hits and misses
+- Memory access latency
+- Cache state updates
+
+This allows users to immediately observe how different memory accesses affect cache behavior.
+
+# Current Status
+
+## Completed
+- Astro exhibit page
+- React cache simulator
+- Interactive cache visualization
+- Address parsing
+- Cache hit/miss simulation
+- References section
+- Disclosure on the use of AI/LLM
+- Table of Contents integration
+- Responsive exhibit layout
+- Styling fixes and compatibility with the exhibit template
+
+## Things to be done
+- Add additional explanatory text throughout the exhibit.
+- Fix the styling for the Main Memory (RAM) section of the visualizer since as of now, it shows blurred text.
+- Improve animations and overall design of the cache operations and the exhibit.
+- Conduct a final code cleanup and refactoring.
+- Proofread the exhibit content and verify all the references.
+- Prepare the repository for the final submission and update the documentation.
+
+# Disclosure on the use of AI/LLM
+
+Artificial Intelligence (AI) tools such as **ChatGPT**, **ClaudeAI**, and **Deepseek** were used during the development of the project to help with productivity and supplementary tool for learning. 
+
+AI assistance was used for: 
+- Explaining how to integrate React components to the Astro exhibit template.
+- Explaining Astro, MDX, and TailwindCSS concepts and how to use them properly in the project.
+- Troubleshooting integration issues between Astro and React components.
+- Clarifying concepts related to cache memory simulation.
+
+All AI-generated suggestions were verified, reviewed, and tested before incorporating it into the project. All the final implementation, design decisions, debugging, and deliverables were our full responsibility. 
+
+# 📱 Virtual Exhibit Design
 
 ## Desktop Views
 
