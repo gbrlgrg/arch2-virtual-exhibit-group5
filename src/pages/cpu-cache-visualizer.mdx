@@ -6,28 +6,57 @@ author: "Barreo, Carlo Gabriel; Gregorio, Gaibril Kyle; Eleydo, Renzel Vince; Le
 readingTime: "10 minutes"
 ---
 
-import CacheSimulator from "../components/CacheSimulator";
+import MuseumEngine from "../components/cache/MuseumEngine";
 import "../styles/project.css";
 
 # Ca-Ching! - The CPU Cache Visualizer
 
-## CPU Cache Visualizer
+## Interactive Cache Exhibit
 
-<CacheSimulator client:load />
+<MuseumEngine client:load />
 
 ## References
 
-- Cache Miss vs Cache Hit: What's the Difference? (2023, May 10). *WP Rocket*. https://wp-rocket.me/wordpress-cache/cache-miss-vs-cache-hit/
-- Lutkevich, B. (2024, June 25). *Cache Memory*. *TechTarget*. https://www.techtarget.com/searchstorage/definition/cache-memory
+[1] NLec 26 - Cache Memory_Replacement Algorithm.pdf. (Primary lecture notes — CSARCH2 course material.)
+
+[2] Computer Organisation and Design (2014).pdf. *BIOMISA*. Available: http://biomisa.org/uploads/2015/09/Computer%20Organisation%20and%20Design%20(2014).pdf
+
+[3] J. R. B. Soares, et al., "Evaluation of the Impact of Coherence Protocols and Cache Sizes on Parallel Algorithms Through Simulations," *Proc. SSCAD*, 2024. Available: https://sol.sbc.org.br/index.php/sscad_estendido/article/download/30964/30767/
+
+[4] C. Hamacher, Z. Vranesic, S. Zaky, and N. Manjikian, *Computer Organization and Embedded Systems*, 6th ed. New York, NY, USA: McGraw-Hill Education, 2012. Available: https://dokumen.pub/computer-organization-and-embedded-systems-6nbsped-0073380652-9780073380650-j-5468494.html
+
+[5] "Cache Memory: Mapping & Replacement Techniques," *Scribd*, 2024. Available: https://www.scribd.com/presentation/970494051/Lecture-2-3-4-Cache-Memory-Mapping-Functions-Replacement-Algorithms-Write-Policies
+
+[6] D. Tsafrir, "Lecture 6: The Memory Hierarchy," *Bar-Ilan University*, 2023. Available: https://www.eng.biu.ac.il/temanad/files/2023/06/Lecture-6-Memory-2023.pdf
+
+[7] D. A. Patterson and J. L. Hennessy, *Computer Organization and Design: The Hardware/Software Interface*, 1st ed. San Francisco, CA, USA: Morgan Kaufmann, 1994. [AbeBooks] Available: https://www.abebooks.com/9781558604285/Computer-Organization-Design-HardwareSoftware-Interface-1558604286/plp
+
+[8] D. A. Patterson and J. L. Hennessy, *Computer Organization and Design: ARM Edition*. Cambridge, MA, USA: Morgan Kaufmann, 2017. Available: http://home.ustc.edu.cn/~louwenqi/reference_books_tools/Computer%20Organization%20and%20Design%20ARM%20edition.pdf
+
+[9] "Summary book of the book entitled Computer Organization and Design: The Hardware Software Interface — Authors: David Patterson, John L. Hennessy," *ResearchGate*, 2022. Available: https://www.researchgate.net/publication/361936256
+
+[10] D. A. Patterson and J. L. Hennessy, *Computer Organization and Design*, Google Books. Available: https://books.google.co.il/books?id=1lD9LZRcIZ8C
+
+[11] "Computer Organization [R18A0505] Lecture Notes," *MRCET*, 2020. Available: https://mrcet.com/downloads/digital_notes/CSE/II%20Year/COMPUTER%20ORGANIZATION%20NOTES.pdf
+
+[12] D. A. Patterson and J. L. Hennessy, *Computer Organization and Design: The Hardware/Software Interface*, Google Books. Available: https://books.google.com/books/about/Computer_Organization_and_Design.html?id=3b63x-0P3_UC
+
+[13] D. A. Patterson and J. L. Hennessy, *Computer Organization and Design: The Hardware/Software Interface*, 3rd ed. *VoWi*. Available: https://vowi.fsinf.at/images/d/d5/TU_Wien-Digital_Design_and_Computer_Architecture_LU_%28Polzer%29_-_David_A._Patterson_John_L._Hennessy_Computer_Organization_and_Design_BookFi.org_-2.pdf
+
+[14] J. L. Hennessy and D. A. Patterson, *Computer Architecture: A Quantitative Approach*, 5th ed. Cambridge, MA, USA: Morgan Kaufmann, 2011. Available: https://acs.pub.ro/~cpop/SMPA/Computer%20Architecture%20A%20Quantitative%20Approach%20(5th%20edition).pdf
+
+[15] J. L. Hennessy and D. A. Patterson, *Computer Architecture: A Quantitative Approach*, 6th ed. Cambridge, MA, USA: Morgan Kaufmann, 2017. Available: https://acs.pub.ro/~cpop/SMPA/Computer%20Architecture,%20Sixth%20Edition_%20A%20Quantitative%20Approach%20(%20PDFDrive%20).pdf
+
+[16] C. Hamacher, Z. Vranesic, and S. Zaky, *Computer Organization*, 5th ed. New York, NY, USA: McGraw-Hill, 2002. Available: https://theswissbay.ch/pdf/Gentoomen%20Library/Computer%20Architecture/Computer_Organization_5th_Edition.pdf
+
+[17] "Computer Organization and Architecture Syllabus," *Scribd*, 2024. Available: https://www.scribd.com/document/796373192/Computer-Architecture-Syllabus-docx
+
+[18] "Computer Organization & Architecture — Syllabus," *Integral University — Student Senior*, 2024. Available: https://studentsenior.com/integral-university/syllabus/-computer-organization-architecture-cs284
+
+[19] "Computer Organization Notes," *AITS-TPT*, 2023. Available: https://aits-tpt.edu.in/wp-content/uploads/2023/09/Computer-Organization-min.pdf
+
+<br />
 
 ## Disclosure on the Use of AI/LLM
 
-Artificial Intelligence (AI) tools such as **ChatGPT**, **Claude AI**, and **DeepSeek** were used during the development of the project to improve productivity and serve as supplementary tools for learning.
-
-AI assistance was used for:
-- Explaining how to integrate React components into the Astro exhibit template.
-- Explaining Astro, MDX, and Tailwind CSS concepts and how to use them properly in the project.
-- Troubleshooting integration issues between Astro and React components.
-- Clarifying concepts related to cache memory simulation.
-
-All AI-generated suggestions were verified, reviewed, and tested before being incorporated into the project. The final implementation, design decisions, debugging process, and all project deliverables were the full responsibility of the project members.
+This project was developed with the assistance of an advanced Large Language Model (LLM) to accelerate code generation, optimize React state management, and assist in designing the UI/UX architecture of the cache visualizer. The LLM was used strictly as a pair-programming tool. All mathematical cache simulations, address partitioning logic, and theoretical concepts presented in this exhibit are derived from our group's primary academic research of the course material, and were thoroughly validated by human review to ensure absolute correctness and alignment with standard Computer Architecture canons.

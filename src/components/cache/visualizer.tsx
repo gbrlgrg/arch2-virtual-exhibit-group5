@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import { Card } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { Cpu, Database, Server, ArrowDown, CheckCircle2, AlertTriangle } from 'lucide-react'
@@ -12,9 +13,10 @@ type VisualizerProps = {
   latency: number
   cache: CacheRow[]
   activeIndex: number | null
+  replacementAlgo?: 'lru' | 'mru' | 'fifo' | 'random'
 }
 
-export function Visualizer({ state, latency, cache, activeIndex }: VisualizerProps) {
+export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo = 'lru' }: VisualizerProps) {
   const isHit = state === 'hit'
   const isMiss = state === 'miss'
   const isCalc = state === 'calculating'
@@ -23,6 +25,28 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
   const topPathActive = isHit || isMiss || isCalc
   // Path from Cache -> RAM is only traversed on a miss.
   const bottomPathActive = isMiss
+
+  // -----------------------------------------------------------------------
+  // Eviction animation: detect when a valid row gets a new tag (overwrite).
+  // Flash that row crimson for ~900 ms, then settle to the miss colour.
+  // -----------------------------------------------------------------------
+  const prevCacheRef = useRef<CacheRow[]>(cache)
+  const [evictedIndex, setEvictedIndex] = useState<number | null>(null)
+  const evictTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (isMiss && activeIndex !== null) {
+      const prev = prevCacheRef.current[activeIndex]
+      const curr = cache[activeIndex]
+      // Eviction = slot was valid before AND tag changed.
+      if (prev.valid && prev.tag !== null && prev.tag !== curr.tag) {
+        if (evictTimerRef.current) clearTimeout(evictTimerRef.current)
+        setEvictedIndex(activeIndex)
+        evictTimerRef.current = setTimeout(() => setEvictedIndex(null), 900)
+      }
+    }
+    prevCacheRef.current = cache
+  }, [cache, isMiss, activeIndex])
 
   return (
     <div className="flex flex-col gap-5">
@@ -52,7 +76,7 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
               'w-full max-w-sm gap-3 p-4 transition-all duration-500',
               isHit
                 ? 'border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
-                : 'border-slate-800/60 bg-slate-950/40',
+                : 'border-slate-800/60 bg-slate-950/40 animate-ambient-breathe',
             ].join(' ')}
           >
             <div className="flex items-center justify-between">
@@ -67,6 +91,12 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
                 <span className="text-xs font-medium text-slate-200">
                   L1 Cache
                 </span>
+                <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-bold text-slate-400 uppercase border border-slate-700">
+                  {replacementAlgo}
+                </span>
+                {/* Valid bit badge */}
+                <span className="exhibit-badge exhibit-badge--valid">Valid</span>
+                <span className="exhibit-badge exhibit-badge--tag">Tag</span>
               </div>
               <span className="font-mono text-[11px] text-slate-500">~2 ns</span>
             </div>
@@ -81,22 +111,38 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
                 const isActive = activeIndex === row.index
                 const activeHit = isActive && isHit
                 const activeMiss = isActive && isMiss
+                const isEvicting = evictedIndex === row.index
+
+                // Determine cell class based on priority: eviction > hit > miss > occupied > empty
+                let cellClass: string
+                if (isEvicting) {
+                  // Crimson eviction flash with physical shake
+                  cellClass =
+                    'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-[0_0_18px_rgba(239,68,68,0.55)] animate-hardware-shake exhibit-eviction-flash'
+                } else if (activeHit) {
+                  cellClass =
+                    'border-emerald-400/70 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.4)] animate-pulse'
+                } else if (activeMiss) {
+                  cellClass =
+                    'border-amber-400/70 bg-amber-500/15 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.35)] animate-pulse'
+                } else if (row.valid) {
+                  cellClass =
+                    'border-slate-700/70 bg-slate-800/50 text-slate-300'
+                } else {
+                  cellClass =
+                    'border-slate-800/50 bg-slate-950/40 text-slate-600'
+                }
+
                 return (
                   <div
                     key={row.index}
                     role="gridcell"
                     aria-label={`Cache row ${row.index}, ${
                       row.valid ? 'occupied' : 'empty'
-                    }`}
+                    }${isEvicting ? ', evicting' : ''}`}
                     className={[
                       'flex h-11 flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-all duration-500',
-                      activeHit
-                        ? 'border-emerald-400/70 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.4)] animate-pulse'
-                        : activeMiss
-                          ? 'border-amber-400/70 bg-amber-500/15 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.35)] animate-pulse'
-                          : row.valid
-                            ? 'border-slate-700/70 bg-slate-800/50 text-slate-300'
-                            : 'border-slate-800/50 bg-slate-950/40 text-slate-600',
+                      cellClass,
                     ].join(' ')}
                   >
                     <span className="opacity-60">#{row.index}</span>
@@ -109,8 +155,10 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
                 )
               })}
             </div>
+
             <p className="text-[10px] text-slate-600">
-              {CACHE_ROWS} direct-mapped rows · tag shown when occupied
+              {CACHE_ROWS} direct-mapped rows · tag shown when occupied ·{' '}
+              <span className="text-rose-500/70">crimson = eviction</span>
             </p>
           </Card>
 
@@ -154,9 +202,7 @@ export function Visualizer({ state, latency, cache, activeIndex }: VisualizerPro
                   key={i}
                   className={[
                     'h-3 rounded-sm transition-all duration-500',
-                    isMiss
-                      ? 'bg-amber-500/25'
-                      : 'bg-slate-800/60',
+                    isMiss ? 'bg-amber-500/25' : 'bg-slate-800/60',
                   ].join(' ')}
                   style={{ width: `${100 - i * 12}%` }}
                 />
@@ -203,12 +249,11 @@ function StatusDashboard({ state, latency }: { state: SimState; latency: number 
           Current State
         </span>
         <div className="flex items-center gap-2">
-          {state === 'hit' ? (
-            <CheckCircle2 className="size-5 text-emerald-400" aria-hidden="true" />
-          ) : state === 'miss' ? (
-            <AlertTriangle className="size-5 text-amber-400" aria-hidden="true" />
-          ) : null}
-          <span className={`font-mono text-2xl font-semibold tracking-tight ${stateTone}`}>
+          {state === 'hit' && <CheckCircle2 className="size-5 text-emerald-400" aria-hidden="true" />}
+          {state === 'miss' && <AlertTriangle className="size-5 text-amber-400" aria-hidden="true" />}
+          {state === 'idle' && <Server className="size-5 text-slate-500" aria-hidden="true" />}
+          <span className={['text-2xl font-bold font-mono tracking-wide', stateTone, 
+            state === 'hit' ? 'neon-text-emerald' : state === 'miss' ? 'neon-text-amber' : ''].join(' ')}>
             {label}
           </span>
         </div>
@@ -229,9 +274,12 @@ function StatusDashboard({ state, latency }: { state: SimState; latency: number 
         <span className="text-[11px] uppercase tracking-wider text-slate-500">
           Latency Counter
         </span>
-        <span className={`font-mono text-2xl font-semibold tracking-tight transition-colors duration-500 ${latencyTone}`}>
-          {latency} ns
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={['text-2xl font-bold font-mono tracking-wide', latencyTone,
+            state === 'hit' ? 'neon-text-emerald' : state === 'miss' ? 'neon-text-amber' : ''].join(' ')}>
+            {latency > 0 ? latency : '—'} <span className="text-sm">ns</span>
+          </span>
+        </div>
         <span className="text-[11px] text-slate-600">
           Time the CPU waited for this fetch
         </span>
@@ -267,9 +315,9 @@ function HardwareBlock({
     >
       <div
         className={[
-          'flex size-11 items-center justify-center rounded-lg transition-all duration-500',
+          'relative flex size-11 items-center justify-center rounded-lg transition-all duration-500',
           glowing
-            ? 'bg-cyan-500/15 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
+            ? 'bg-cyan-500/15 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.3)] animate-cyber-pulse'
             : 'bg-slate-800/60 text-slate-400',
         ].join(' ')}
       >
@@ -320,11 +368,12 @@ function Connector({
     >
       <div
         className={[
-          'h-7 w-0.5 rounded-full transition-all duration-500',
+          'relative h-7 w-0.5 rounded-full overflow-hidden transition-all duration-500',
           active ? lineTone : 'bg-slate-800',
-          active && tone !== 'slate' ? 'animate-pulse' : '',
         ].join(' ')}
-      />
+      >
+        {active && <div className="absolute inset-0 bg-white/60 animate-data-packet" />}
+      </div>
       <ArrowDown
         className={[
           'size-4 -mt-1 transition-colors duration-500',

@@ -43,7 +43,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: Inter, Arial, sans-serif;
-  --font-mono: Consolas, Monaco, monospace;
+  --font-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -191,3 +191,1257 @@ a:not(.cache-simulator *):not(.cache-simulator) {
     --sidebar-ring: oklch(0.556 0 0);
   }
 }
+
+/* =============================================================================
+   EXHIBIT PREMIUM COMPONENT STYLES
+   Custom visual components for the Cache Memory virtual exhibit.
+   All classes are prefixed with "exhibit-" to avoid collisions with global.css.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Callout / Analogy Cards
+   Usage: <blockquote class="exhibit-callout exhibit-callout--blue">
+   --------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Callout cards — designed for WHITE article background.
+   Text colours are all dark enough to pass WCAG AA contrast.
+   --------------------------------------------------------------------------- */
+
+.exhibit-callout {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  padding: 1.5rem 1.75rem;
+  border-radius: 0.875rem;
+  border-left: 5px solid;
+  margin: 2rem 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  line-height: 1.7;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.exhibit-callout:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.exhibit-callout__icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  line-height: 1;
+}
+
+.exhibit-callout__title {
+  font-family: "Lora Variable", serif;
+  font-size: 1.075rem;
+  font-weight: 700;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.35;
+}
+
+/* Body text — dark for white backgrounds */
+.exhibit-callout p {
+  font-size: 0.9375rem;
+  color: #334155; /* slate-700 — readable on white */
+  margin: 0.5rem 0;
+}
+
+.exhibit-callout p:first-of-type { margin-top: 0; }
+.exhibit-callout p:last-of-type  { margin-bottom: 0; }
+
+.exhibit-callout ul {
+  margin: 0.5rem 0 0 1.25rem;
+  padding: 0;
+  list-style: disc;
+  color: #334155;
+  font-size: 0.9375rem;
+}
+
+.exhibit-callout li { margin: 0.4rem 0; }
+
+.exhibit-callout strong {
+  color: #0f172a; /* slate-900 — near-black for emphasis */
+  font-weight: 700;
+}
+
+.exhibit-callout em {
+  color: #475569; /* slate-600 */
+  font-style: italic;
+}
+
+.exhibit-callout code {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.875em;
+  background: rgba(0, 0, 0, 0.07);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  color: #1e293b;
+}
+
+/* ── Blue variant (Library / Core Concept) ── */
+.exhibit-callout--blue {
+  background-color: #eff6ff; /* blue-50 */
+  border-color: #3b82f6;    /* blue-500 */
+}
+.exhibit-callout--blue .exhibit-callout__title { color: #1d4ed8; } /* blue-700 */
+
+/* ── Cyan variant (AMAT / formulas) ── */
+.exhibit-callout--cyan {
+  background-color: #ecfeff; /* cyan-50 */
+  border-color: #06b6d4;    /* cyan-500 */
+}
+.exhibit-callout--cyan .exhibit-callout__title { color: #0e7490; } /* cyan-700 */
+
+/* ── Purple variant (Direct Mapping) ── */
+.exhibit-callout--purple {
+  background-color: #faf5ff; /* purple-50 */
+  border-color: #a855f7;    /* purple-500 */
+}
+.exhibit-callout--purple .exhibit-callout__title { color: #7e22ce; } /* purple-700 */
+
+/* ── Amber variant (Fully Associative) ── */
+.exhibit-callout--amber {
+  background-color: #fffbeb; /* amber-50 */
+  border-color: #f59e0b;    /* amber-500 */
+}
+.exhibit-callout--amber .exhibit-callout__title { color: #b45309; } /* amber-700 */
+
+/* ── Emerald variant (Set-Associative) ── */
+.exhibit-callout--emerald {
+  background-color: #f0fdf4; /* green-50 */
+  border-color: #10b981;    /* emerald-500 */
+}
+.exhibit-callout--emerald .exhibit-callout__title { color: #065f46; } /* emerald-800 */
+
+/* ---------------------------------------------------------------------------
+   Write Policy Comparison Cards
+   Usage: <div class="exhibit-policy-card exhibit-policy-card--green">
+   --------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Write Policy Comparison Cards — white background compatible
+   --------------------------------------------------------------------------- */
+
+.exhibit-policy-card {
+  border-radius: 0.875rem;
+  border: 1.5px solid;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exhibit-policy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.exhibit-policy-card--green {
+  background-color: #f0fdf4; /* green-50 */
+  border-color: #86efac;    /* green-300 */
+}
+
+.exhibit-policy-card--amber {
+  background-color: #fffbeb; /* amber-50 */
+  border-color: #fcd34d;    /* amber-300 */
+}
+
+.exhibit-policy-card__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.exhibit-policy-card__badge {
+  font-family: "Lora Variable", serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.exhibit-policy-card--green .exhibit-policy-card__badge { color: #15803d; } /* green-700 */
+.exhibit-policy-card--amber .exhibit-policy-card__badge { color: #b45309; } /* amber-700 */
+
+.exhibit-policy-card__alt {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.exhibit-policy-card p {
+  font-size: 0.9rem;
+  color: #334155; /* slate-700 — readable on light bg */
+  line-height: 1.65;
+  margin: 0;
+}
+
+.exhibit-policy-card strong { color: #0f172a; } /* slate-900 */
+
+
+.exhibit-policy-card__pros {
+  background: #d1fae5; /* green-100 */
+  color: #14532d;      /* green-900 */
+  border-left: 3px solid #16a34a;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}
+
+.exhibit-policy-card__cons {
+  background: #fee2e2; /* red-100 */
+  color: #7f1d1d;      /* red-900 */
+  border-left: 3px solid #dc2626;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------------
+   Simulator dark banner wrapper
+   All text colours hardcoded here so they can't be overridden by the
+   global body { color: #1e1e1e } rule.
+   --------------------------------------------------------------------------- */
+
+.exhibit-simulator-wrap {
+  background-color: #0f172a; /* slate-900 */
+  border-color: #475569;     /* slate-600 */
+  color: #e2e8f0;            /* slate-200 — all children inherit this */
+}
+
+.exhibit-simulator-intro {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Force all p tags inside the intro to be light, regardless of global rules */
+.exhibit-simulator-intro p {
+  color: #cbd5e1 !important;
+}
+
+.exhibit-simulator-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background-color: rgba(34, 211, 238, 0.15);
+  color: #67e8f9; /* cyan-300 */
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.exhibit-simulator-label {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #22d3ee !important; /* cyan-400 — force over inherited dark */
+  margin: 0 0 0.15rem 0;
+}
+
+.exhibit-simulator-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f8fafc !important; /* near-white — force over inherited dark */
+  line-height: 1.3;
+  margin: 0;
+}
+
+.exhibit-simulator-desc {
+  font-size: 0.875rem;
+  color: #cbd5e1 !important; /* slate-300 — force over inherited dark */
+  line-height: 1.65;
+  max-width: 42rem;
+  margin: 0.5rem 0 0 0;
+}
+
+.exhibit-simulator-highlight--cyan {
+  color: #67e8f9 !important; /* cyan-300 */
+  font-weight: 600;
+}
+
+.exhibit-simulator-highlight--green {
+  color: #4ade80 !important; /* green-400 */
+  font-weight: 600;
+}
+
+.exhibit-simulator-highlight--amber {
+  color: #fbbf24 !important; /* amber-400 */
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Data Tables
+   Usage: <div class="exhibit-table-wrap">
+   --------------------------------------------------------------------------- */
+
+.exhibit-table-wrap table {
+  border-collapse: collapse;
+  background: rgba(15, 23, 42, 0.6); /* slate-950/60 */
+}
+
+.exhibit-table-wrap thead tr {
+  letter-spacing: 0.06em;
+}
+
+.exhibit-table-wrap th,
+.exhibit-table-wrap td {
+  vertical-align: middle;
+}
+
+.exhibit-table-wrap code {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.85em;
+  background: rgba(255,255,255,0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------------------
+   Article horizontal rules — styled as glowing dividers
+   --------------------------------------------------------------------------- */
+
+.article hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(148, 163, 184, 0.3) 20%,
+    rgba(148, 163, 184, 0.3) 80%,
+    transparent
+  );
+  margin: 2.5rem 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive grid utilities (used inline in MDX for policy card layout)
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .exhibit-callout {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .exhibit-callout__icon {
+    font-size: 1.5rem;
+  }
+
+  .exhibit-callout--cyan .font-mono.text-lg {
+    font-size: 0.85rem;
+    word-break: break-word;
+  }
+}
+
+/* =============================================================================
+   NEW IMMERSIVE MUSEUM EXHIBIT — PREMIUM ADDITIONS
+   All classes prefixed "exhibit-" to avoid collisions.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Hero Banner
+   --------------------------------------------------------------------------- */
+
+@keyframes hero-gradient-pan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer-slide {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+
+.exhibit-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.98) 0%,
+    rgba(15, 10, 40, 0.98) 30%,
+    rgba(6, 18, 42, 0.98) 60%,
+    rgba(2, 8, 28, 0.98) 100%
+  );
+  box-shadow:
+    0 0 80px rgba(99, 102, 241, 0.15),
+    0 0 40px rgba(34, 211, 238, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  padding: 3.5rem 2.5rem 3rem;
+  margin: 2rem 0 3rem;
+  animation: fade-in-up 0.8s ease both;
+}
+
+/* Animated grid overlay */
+.exhibit-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* Radial glow orbs */
+.exhibit-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 30%, rgba(34,211,238,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 55% 85%, rgba(16,185,129,0.08) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.exhibit-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #818cf8; /* indigo-400 */
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.exhibit-hero__eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #818cf8;
+  box-shadow: 0 0 8px rgba(129,140,248,0.8);
+  animation: hero-float 2.5s ease-in-out infinite;
+}
+
+.exhibit-hero__title {
+  font-family: "Lora Variable", serif;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #f8fafc;
+  margin: 0 0 1.25rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.exhibit-hero__title-accent {
+  background: linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #34d399 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: hero-gradient-pan 5s ease infinite;
+}
+
+.exhibit-hero__subtitle {
+  font-size: 1.05rem;
+  color: #94a3b8;
+  line-height: 1.7;
+  max-width: 52rem;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.exhibit-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.exhibit-hero__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.1);
+  font-size: 0.75rem;
+  color: #a5b4fc;
+  font-family: Consolas, Monaco, monospace;
+  letter-spacing: 0.04em;
+}
+
+/* ---------------------------------------------------------------------------
+   Section Part Headers
+   --------------------------------------------------------------------------- */
+
+.exhibit-part-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3.5rem 0 1.75rem;
+}
+
+.exhibit-part-header__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  font-family: Consolas, Monaco, monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  border: 1px solid;
+}
+
+.exhibit-part-header__number--indigo {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+  box-shadow: 0 0 16px rgba(99,102,241,0.25);
+}
+
+.exhibit-part-header__number--cyan {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.4);
+  color: #22d3ee;
+  box-shadow: 0 0 16px rgba(34,211,238,0.2);
+}
+
+.exhibit-part-header__number--emerald {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  box-shadow: 0 0 16px rgba(16,185,129,0.2);
+}
+
+.exhibit-part-header__number--amber {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  box-shadow: 0 0 16px rgba(245,158,11,0.2);
+}
+
+.exhibit-part-header__text {
+  flex: 1;
+}
+
+.exhibit-part-header__label {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.exhibit-part-header__title {
+  font-family: "Lora Variable", serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.exhibit-part-header__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(148,163,184,0.3), transparent);
+  max-width: 8rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Formula Display Block
+   --------------------------------------------------------------------------- */
+
+.exhibit-formula-block {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(6, 18, 42, 0.7);
+  backdrop-filter: blur(12px);
+  padding: 1.75rem 2rem;
+  margin: 1.75rem 0;
+  text-align: center;
+}
+
+.exhibit-formula-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34,211,238,0.5), transparent);
+}
+
+.exhibit-formula-block__label {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #22d3ee;
+  display: block;
+  margin-bottom: 0.85rem;
+}
+
+.exhibit-formula-block__formula {
+  font-family: Consolas, Monaco, monospace;
+  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.exhibit-formula-block__formula .f-var {
+  color: #34d399; /* emerald - variables */
+}
+
+.exhibit-formula-block__formula .f-op {
+  color: #818cf8; /* indigo - operators */
+  padding: 0 0.2em;
+}
+
+.exhibit-formula-block__formula .f-val {
+  color: #22d3ee; /* cyan - values */
+}
+
+.exhibit-formula-block__subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+  display: block;
+}
+
+/* ---------------------------------------------------------------------------
+   Interactive Trigger Buttons
+   --------------------------------------------------------------------------- */
+
+.exhibit-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(34,211,238,0.08));
+  color: #a5b4fc;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.exhibit-trigger-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: shimmer-slide 2.5s ease infinite;
+}
+
+.exhibit-trigger-btn:hover {
+  border-color: rgba(129, 140, 248, 0.7);
+  background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(34,211,238,0.14));
+  color: #c7d2fe;
+  box-shadow: 0 0 24px rgba(99,102,241,0.4), 0 0 8px rgba(34,211,238,0.2);
+  transform: translateY(-1px);
+}
+
+.exhibit-trigger-btn:active {
+  transform: translateY(0);
+}
+
+.exhibit-trigger-btn__icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* Trigger container — sits inline with text */
+.exhibit-trigger-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px dashed rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.exhibit-trigger-wrap__label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-family: Consolas, Monaco, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark-mode Callout variants (for use on dark page backgrounds)
+   --------------------------------------------------------------------------- */
+
+.exhibit-callout--dark-blue {
+  background: rgba(29, 78, 216, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+.exhibit-callout--dark-blue .exhibit-callout__title { color: #93c5fd; }
+.exhibit-callout--dark-blue p  { color: #cbd5e1; }
+.exhibit-callout--dark-blue strong { color: #f1f5f9; }
+.exhibit-callout--dark-blue ul { color: #cbd5e1; }
+
+.exhibit-callout--dark-purple {
+  background: rgba(109, 40, 217, 0.1);
+  border-color: rgba(168, 85, 247, 0.5);
+}
+.exhibit-callout--dark-purple .exhibit-callout__title { color: #d8b4fe; }
+.exhibit-callout--dark-purple p  { color: #cbd5e1; }
+.exhibit-callout--dark-purple strong { color: #f1f5f9; }
+.exhibit-callout--dark-purple ul { color: #cbd5e1; }
+
+.exhibit-callout--dark-amber {
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+.exhibit-callout--dark-amber .exhibit-callout__title { color: #fde68a; }
+.exhibit-callout--dark-amber p  { color: #cbd5e1; }
+.exhibit-callout--dark-amber strong { color: #f1f5f9; }
+.exhibit-callout--dark-amber ul { color: #cbd5e1; }
+
+.exhibit-callout--dark-emerald {
+  background: rgba(6, 78, 59, 0.12);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+.exhibit-callout--dark-emerald .exhibit-callout__title { color: #6ee7b7; }
+.exhibit-callout--dark-emerald p  { color: #cbd5e1; }
+.exhibit-callout--dark-emerald strong { color: #f1f5f9; }
+.exhibit-callout--dark-emerald ul { color: #cbd5e1; }
+
+.exhibit-callout--dark-rose {
+  background: rgba(159, 18, 57, 0.12);
+  border-color: rgba(244, 63, 94, 0.5);
+}
+.exhibit-callout--dark-rose .exhibit-callout__title { color: #fda4af; }
+.exhibit-callout--dark-rose p  { color: #cbd5e1; }
+.exhibit-callout--dark-rose strong { color: #f1f5f9; }
+.exhibit-callout--dark-rose ol { color: #cbd5e1; }
+.exhibit-callout--dark-rose li { color: #cbd5e1; }
+
+/* ---------------------------------------------------------------------------
+   Premium Dark Tables
+   --------------------------------------------------------------------------- */
+
+.exhibit-table-dark {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  font-size: 0.875rem;
+}
+
+.exhibit-table-dark thead tr {
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(34,211,238,0.1));
+  border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.exhibit-table-dark thead th {
+  padding: 0.875rem 1.25rem;
+  text-align: left;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.exhibit-table-dark tbody tr {
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  transition: background 0.2s ease;
+}
+
+.exhibit-table-dark tbody tr:last-child {
+  border-bottom: none;
+}
+
+.exhibit-table-dark tbody tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.exhibit-table-dark tbody td {
+  padding: 0.75rem 1.25rem;
+  color: #cbd5e1;
+  vertical-align: middle;
+}
+
+.exhibit-table-dark .td-accent-cyan   { color: #22d3ee; font-weight: 600; }
+.exhibit-table-dark .td-accent-indigo { color: #818cf8; font-weight: 600; }
+.exhibit-table-dark .td-accent-green  { color: #34d399; font-weight: 600; }
+.exhibit-table-dark .td-accent-amber  { color: #fbbf24; font-weight: 600; }
+.exhibit-table-dark .td-accent-red    { color: #f87171; font-weight: 600; }
+.exhibit-table-dark .td-accent-slate  { color: #94a3b8; }
+.exhibit-table-dark .td-mono          { font-family: Consolas, Monaco, monospace; font-size: 0.8rem; }
+.exhibit-table-dark .td-star          { color: #fbbf24; }
+
+/* ---------------------------------------------------------------------------
+   Write Policy Cards (Dark variant)
+   --------------------------------------------------------------------------- */
+
+.exhibit-policy-card--dark {
+  border-radius: 0.875rem;
+  border: 1px solid;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.exhibit-policy-card--dark:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+}
+
+.exhibit-policy-card--dark-green {
+  background: rgba(6, 78, 59, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.exhibit-policy-card--dark-amber {
+  background: rgba(120, 53, 15, 0.15);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.exhibit-policy-card--dark p {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.exhibit-policy-card--dark strong {
+  color: #f1f5f9;
+}
+
+.exhibit-policy-card--dark .exhibit-policy-card__badge {
+  font-family: "Lora Variable", serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.exhibit-policy-card--dark-green .exhibit-policy-card__badge { color: #34d399; }
+.exhibit-policy-card--dark-amber .exhibit-policy-card__badge { color: #fbbf24; }
+
+.exhibit-policy-card--dark .exhibit-policy-card__pros {
+  background: rgba(6, 78, 59, 0.3);
+  color: #6ee7b7;
+  border-left: 3px solid #10b981;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}
+
+.exhibit-policy-card--dark .exhibit-policy-card__cons {
+  background: rgba(127, 29, 29, 0.25);
+  color: #fca5a5;
+  border-left: 3px solid #ef4444;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------------
+   Academic Citation Badges (Valid bit / Tag / Index / Offset / Block Set)
+   --------------------------------------------------------------------------- */
+
+.exhibit-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.35rem;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid;
+  line-height: 1.4;
+}
+
+.exhibit-badge--valid {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+}
+
+.exhibit-badge--tag {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.4);
+  color: #67e8f9;
+}
+
+.exhibit-badge--index {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+.exhibit-badge--offset {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #d8b4fe;
+}
+
+.exhibit-badge--set {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+}
+
+.exhibit-badge--hit {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #34d399;
+}
+
+.exhibit-badge--miss {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+}
+
+/* ---------------------------------------------------------------------------
+   Simulator centerpiece wrapper
+   --------------------------------------------------------------------------- */
+
+.exhibit-simulator-centerpiece {
+  position: relative;
+  margin: 3.5rem 0;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  overflow: hidden;
+  box-shadow:
+    0 0 120px rgba(34, 211, 238, 0.06),
+    0 0 60px rgba(99, 102, 241, 0.08),
+    0 32px 64px rgba(0, 0, 0, 0.4);
+}
+
+.exhibit-simulator-centerpiece::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(34,211,238,0.6) 30%,
+    rgba(129,140,248,0.6) 70%,
+    transparent 100%
+  );
+  z-index: 10;
+}
+
+/* Label strip above the simulator */
+.exhibit-simulator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 0.75rem;
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(34,211,238,0.06));
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.exhibit-simulator-eyebrow {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #818cf8;
+}
+
+/* ---------------------------------------------------------------------------
+   References section
+   --------------------------------------------------------------------------- */
+
+.exhibit-references {
+  margin: 3rem 0 0;
+  padding: 2rem 0 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.exhibit-references ol {
+  list-style: none;
+  counter-reset: refs;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.exhibit-references li {
+  counter-increment: refs;
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: #94a3b8;
+}
+
+.exhibit-references li::before {
+  content: '[' counter(refs) ']';
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.75rem;
+  color: #4f6380;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  min-width: 2.2rem;
+}
+
+.exhibit-references a {
+  color: #60a5fa;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.exhibit-references a:hover {
+  text-decoration: underline;
+  color: #93c5fd;
+}
+
+/* ---------------------------------------------------------------------------
+   Eviction flash keyframe (used by visualizer.tsx)
+   --------------------------------------------------------------------------- */
+
+@keyframes eviction-flash {
+  0%   { box-shadow: 0 0 0px rgba(239,68,68,0); }
+  30%  { box-shadow: 0 0 28px rgba(239,68,68,0.8); }
+  70%  { box-shadow: 0 0 20px rgba(239,68,68,0.5); }
+  100% { box-shadow: 0 0 0px rgba(239,68,68,0); }
+}
+
+.exhibit-eviction-flash {
+  animation: eviction-flash 0.9s ease forwards, pulse 0.9s ease infinite !important;
+}
+
+/* ---------------------------------------------------------------------------
+   LRU/MRU comparison cards (dark)
+   --------------------------------------------------------------------------- */
+
+.exhibit-algo-card {
+  border-radius: 1rem;
+  border: 1px solid;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exhibit-algo-card:hover {
+  transform: translateY(-2px);
+}
+
+.exhibit-algo-card--fail {
+  background: rgba(127, 29, 29, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.exhibit-algo-card--success {
+  background: rgba(6, 78, 59, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.exhibit-algo-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.875rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exhibit-algo-card--fail  .exhibit-algo-card__title { color: #fca5a5; }
+.exhibit-algo-card--success .exhibit-algo-card__title { color: #6ee7b7; }
+
+.exhibit-algo-card ol {
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.exhibit-algo-card ol li strong { color: #f1f5f9; }
+.exhibit-algo-card--fail ol li .hit  { color: #fca5a5; font-weight: 700; }
+.exhibit-algo-card--success ol li .hit { color: #6ee7b7; font-weight: 700; }
+
+.exhibit-algo-card__verdict {
+  margin-top: 1rem;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.exhibit-algo-card--fail .exhibit-algo-card__verdict {
+  background: rgba(127, 29, 29, 0.3);
+  color: #fca5a5;
+  border-left: 3px solid #ef4444;
+}
+
+.exhibit-algo-card--success .exhibit-algo-card__verdict {
+  background: rgba(6, 78, 59, 0.3);
+  color: #6ee7b7;
+  border-left: 3px solid #10b981;
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive tweaks for new components
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .exhibit-hero {
+    padding: 2rem 1.25rem;
+  }
+  .exhibit-hero__title {
+    font-size: 1.75rem;
+  }
+  .exhibit-formula-block {
+    padding: 1.25rem;
+  }
+  .exhibit-formula-block__formula {
+    font-size: 0.85rem;
+  }
+  .exhibit-part-header__title {
+    font-size: 1.3rem;
+  }
+  .exhibit-simulator-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+/* Custom Scrollbar for Left Panel */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.4);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.8);
+}
+
+/* ==========================================================================
+   Sci-Fi UI/UX Animations (The Absolute Wow Factor)
+   ========================================================================== */
+
+/* 1. Kinetic Data Flow Packet */
+@keyframes data-packet {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.animate-data-packet {
+  animation: data-packet 0.65s ease-in-out forwards;
+}
+
+/* 2. Cyber Pulse (Expanding sonar ring for hardware activity) */
+@keyframes cyber-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.animate-cyber-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: inherit;
+  animation: cyber-pulse 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  z-index: -1;
+}
+
+/* 3. Hardware Eviction Shake (Aggressive eviction) */
+@keyframes hardware-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+.animate-hardware-shake {
+  animation: hardware-shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* 4. Ambient Breathing (Idle hardware glow) */
+@keyframes ambient-breathe {
+  0%, 100% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.05); }
+  50% { box-shadow: 0 0 25px rgba(34, 211, 238, 0.15); }
+}
+
+.animate-ambient-breathe {
+  animation: ambient-breathe 4s ease-in-out infinite;
+}
+
+/* Neon text shadows for critical telemetry */
+.neon-text-emerald {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.neon-text-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.neon-text-cyan {
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+}
