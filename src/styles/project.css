@@ -1515,4 +1515,153 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 
 .neon-text-cyan {
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+/* ==========================================================================
+   ENHANCED MULTI-STEP VISUALIZER ANIMATIONS
+   ========================================================================== */
+
+/* Reverse data packet (flowing upward — for hit response & RAM return) */
+@keyframes data-packet-up {
+  0% { transform: translateY(100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+
+.animate-data-packet-up {
+  animation: data-packet-up 0.8s ease-in-out forwards;
+}
+
+/* Delayed secondary particle trails */
+@keyframes data-packet-delayed-kf {
+  0% { transform: translateY(-100%); opacity: 0; }
+  15% { opacity: 0.6; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.animate-data-packet-delayed {
+  animation: data-packet-delayed-kf 1s ease-in-out 0.3s forwards;
+}
+
+@keyframes data-packet-up-delayed-kf {
+  0% { transform: translateY(100%); opacity: 0; }
+  15% { opacity: 0.6; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+
+.animate-data-packet-up-delayed {
+  animation: data-packet-up-delayed-kf 1s ease-in-out 0.3s forwards;
+}
+
+/* Cache scanning beam (horizontal sweep on cache card) */
+@keyframes cache-scan-beam {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-cache-scan {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 211, 238, 0.15) 40%,
+    rgba(34, 211, 238, 0.25) 50%,
+    rgba(34, 211, 238, 0.15) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: cache-scan-beam 1.5s ease-in-out infinite;
+}
+
+/* Result flash — green (hit) */
+@keyframes result-flash-green {
+  0% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+  20% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); }
+  100% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.1); }
+}
+
+.animate-result-flash-green {
+  animation: result-flash-green 0.8s ease-out forwards;
+}
+
+/* Result flash — amber (miss) */
+@keyframes result-flash-amber {
+  0% { box-shadow: 0 0 0px rgba(245, 158, 11, 0); }
+  20% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); }
+  100% { box-shadow: 0 0 4px rgba(245, 158, 11, 0.1); }
+}
+
+.animate-result-flash-amber {
+  animation: result-flash-amber 0.8s ease-out forwards;
+}
+
+/* Row scanning (individual cache cell highlight with sweep) */
+@keyframes row-scan {
+  0% { box-shadow: 0 0 0px rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.2); }
+  30% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.5); border-color: rgba(34, 211, 238, 0.8); }
+  60% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.3); border-color: rgba(34, 211, 238, 0.5); }
+  100% { box-shadow: 0 0 8px rgba(34, 211, 238, 0.2); border-color: rgba(34, 211, 238, 0.4); }
+}
+
+.animate-row-scan {
+  animation: row-scan 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Block loading into cache (pulsing glow when new data arrives) */
+@keyframes block-load {
+  0% { opacity: 0.5; transform: scale(0.95); box-shadow: 0 0 0px rgba(34, 211, 238, 0); }
+  30% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 20px rgba(34, 211, 238, 0.5); }
+  60% { transform: scale(0.98); box-shadow: 0 0 12px rgba(34, 211, 238, 0.3); }
+  100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px rgba(34, 211, 238, 0.15); }
+}
+
+.animate-block-load {
+  animation: block-load 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Hit ripple — expanding ring effect */
+@keyframes hit-ripple {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5), 0 0 0 0 rgba(16, 185, 129, 0.3); }
+  40% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 0 16px 0 rgba(16, 185, 129, 0.4); }
+  100% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0), 0 0 8px 0 rgba(16, 185, 129, 0.15); }
+}
+
+.animate-hit-ripple {
+  animation: hit-ripple 0.8s ease-out forwards;
+}
+
+/* RAM activity bars animation */
+@keyframes ram-bars {
+  0% { opacity: 0.3; transform: scaleX(0.8); }
+  50% { opacity: 1; transform: scaleX(1.02); }
+  100% { opacity: 0.7; transform: scaleX(1); }
+}
+
+.animate-ram-bars {
+  animation: ram-bars 0.6s ease-out both;
+  transform-origin: left;
+}
+
+/* RAM deliver text shimmer */
+@keyframes ram-deliver {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.animate-ram-deliver {
+  animation: ram-deliver 1s ease-in-out infinite;
+}
+
+/* Narration step entry animation */
+@keyframes narration-enter {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.animate-narration-enter {
+  animation: narration-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

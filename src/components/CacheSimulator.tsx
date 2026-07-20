@@ -51,7 +51,7 @@ export default function Page() {
         setCache(result.cache)
         setLatency(result.latency)
         setSimState(result.outcome)
-      }, 650)
+      }, 1200)
 
       timersRef.current.push(t)
     },

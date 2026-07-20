@@ -108,7 +108,7 @@ export default function MuseumEngine() {
           else if (result.outcome === 'miss') setMisses(m => m + 1)
           return result.cache
         })
-      }, 2650)
+      }, 3200)
       timersRef.current.push(tCalc, tResult)
     },
     [forceMode],
