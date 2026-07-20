@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Card } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
-import { Cpu, Database, Server, ArrowDown, CheckCircle2, AlertTriangle } from 'lucide-react'
+import {
+  Cpu, Database, Server, ArrowDown, CheckCircle2, AlertTriangle,
+  Loader2, Search, Send,
+} from 'lucide-react'
 import { CACHE_ROWS, type CacheRow } from '../../lib/cache-sim'
 
 export type SimState = 'idle' | 'calculating' | 'hit' | 'miss'
@@ -21,15 +24,10 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
   const isMiss = state === 'miss'
   const isCalc = state === 'calculating'
 
-  // Path from CPU -> Cache is active on every lookup attempt.
   const topPathActive = isHit || isMiss || isCalc
-  // Path from Cache -> RAM is only traversed on a miss.
   const bottomPathActive = isMiss
 
-  // -----------------------------------------------------------------------
-  // Eviction animation: detect when a valid row gets a new tag (overwrite).
-  // Flash that row crimson for ~900 ms, then settle to the miss colour.
-  // -----------------------------------------------------------------------
+  // ── Eviction animation ────────────────────────────────────────────────
   const prevCacheRef = useRef<CacheRow[]>(cache)
   const [evictedIndex, setEvictedIndex] = useState<number | null>(null)
   const evictTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -38,27 +36,111 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
     if (isMiss && activeIndex !== null) {
       const prev = prevCacheRef.current[activeIndex]
       const curr = cache[activeIndex]
-      // Eviction = slot was valid before AND tag changed.
       if (prev.valid && prev.tag !== null && prev.tag !== curr.tag) {
         if (evictTimerRef.current) clearTimeout(evictTimerRef.current)
         setEvictedIndex(activeIndex)
-        evictTimerRef.current = setTimeout(() => setEvictedIndex(null), 900)
+        evictTimerRef.current = setTimeout(() => setEvictedIndex(null), 1200)
       }
     }
     prevCacheRef.current = cache
   }, [cache, isMiss, activeIndex])
 
-  return (
-    <div className="flex flex-col gap-5">
-      <StatusDashboard state={state} latency={latency} />
+  // ── Dynamic labels based on state ─────────────────────────────────────
+  const cpuSubtitle = isCalc
+    ? 'Sending address...'
+    : isHit
+      ? 'Data received!'
+      : isMiss
+        ? 'Stalling — RAM fetch'
+        : 'Requests data'
 
+  const cacheStatusText = isCalc
+    ? activeIndex !== null
+      ? `Checking row #${activeIndex}...`
+      : 'Looking up...'
+    : isHit
+      ? `HIT — tag matched`
+      : isMiss
+        ? 'MISS — tag mismatch'
+        : 'Idle'
+
+  const connectorLabel = isCalc
+    ? 'Address sent'
+    : isHit
+      ? 'Tag match!'
+      : undefined
+
+  // Lookup pipeline step: 1=CPU, 2=Cache, 3=RAM, 4=Result
+  const pipelineStep = isCalc ? 2 : isHit || isMiss ? 4 : 0
+
+  return (
+    <div className="flex flex-col gap-4">
+
+      {/* ── LOOKUP PIPELINE INDICATOR ───────────────────────────────── */}
+      <div className="flex items-center gap-0 rounded-lg border border-slate-800/60 bg-slate-950/40 p-2.5">
+        {[
+          { num: 1, label: 'CPU Send', icon: <Send className="size-3" /> },
+          { num: 2, label: 'Cache Check', icon: <Search className="size-3" /> },
+          { num: 3, label: 'RAM Fetch', icon: <Database className="size-3" /> },
+          { num: 4, label: 'Result', icon: isHit ? <CheckCircle2 className="size-3" /> : isMiss ? <AlertTriangle className="size-3" /> : <Loader2 className="size-3" /> },
+        ].map((step, i) => {
+          const reached = pipelineStep >= step.num
+          const isCurrent = pipelineStep === step.num
+          const isRamStep = step.num === 3
+
+          // RAM step only lights on miss
+          const active = isRamStep ? (isMiss && pipelineStep >= 3) : reached
+
+          return (
+            <div key={step.num} className="flex items-center flex-1">
+              <div className="flex flex-col items-center gap-0.5 flex-1">
+                <div
+                  className={[
+                    'size-6 rounded-full flex items-center justify-center border transition-all duration-500',
+                    active
+                      ? isCurrent
+                        ? isHit
+                          ? 'bg-emerald-500/25 border-emerald-400 text-emerald-300 animate-step-glow'
+                          : isMiss && step.num >= 3
+                            ? 'bg-amber-500/25 border-amber-400 text-amber-300 animate-step-glow'
+                            : 'bg-cyan-500/25 border-cyan-400 text-cyan-300 animate-step-glow'
+                        : 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400'
+                      : 'bg-slate-900 border-slate-800 text-slate-600',
+                  ].join(' ')}
+                >
+                  {step.icon}
+                </div>
+                <span
+                  className={[
+                    'text-[8px] font-medium transition-colors duration-300',
+                    active ? 'text-slate-300' : 'text-slate-600',
+                  ].join(' ')}
+                >
+                  {step.label}
+                </span>
+              </div>
+              {i < 3 && (
+                <div
+                  className={[
+                    'h-px w-4 transition-colors duration-500 mt-[-10px]',
+                    active && pipelineStep > step.num ? 'bg-cyan-500/50' : 'bg-slate-800',
+                  ].join(' ')}
+                />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── HARDWARE DIAGRAM ────────────────────────────────────────── */}
       <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-6 gap-0">
         <div className="flex flex-col items-center">
+
           {/* CPU BLOCK */}
           <HardwareBlock
             icon={<Cpu className="size-6" aria-hidden="true" />}
             title="CPU"
-            subtitle="Requests data"
+            subtitle={cpuSubtitle}
             tone="cyan"
             glowing={topPathActive}
           />
@@ -66,8 +148,9 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
           {/* CPU -> Cache connector */}
           <Connector
             active={topPathActive}
-            tone={isHit ? 'emerald' : isMiss ? 'slate' : 'cyan'}
-            label={isHit ? 'Hit' : undefined}
+            tone={isHit ? 'emerald' : isMiss ? 'amber' : 'cyan'}
+            label={connectorLabel}
+            subtitle={isCalc ? 'Transmitting address...' : isHit ? 'Data flowing back' : undefined}
           />
 
           {/* CACHE L1 BLOCK */}
@@ -76,7 +159,9 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
               'w-full max-w-sm gap-3 p-4 transition-all duration-500',
               isHit
                 ? 'border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
-                : 'border-slate-800/60 bg-slate-950/40 animate-ambient-breathe',
+                : isMiss
+                  ? 'border-amber-500/30 bg-amber-500/5'
+                  : 'border-slate-800/60 bg-slate-950/40 animate-ambient-breathe',
             ].join(' ')}
           >
             <div className="flex items-center justify-between">
@@ -84,7 +169,7 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 <Server
                   className={[
                     'size-4 transition-colors duration-500',
-                    isHit ? 'text-emerald-400' : 'text-slate-400',
+                    isHit ? 'text-emerald-400' : isMiss ? 'text-amber-400' : 'text-slate-400',
                   ].join(' ')}
                   aria-hidden="true"
                 />
@@ -94,11 +179,24 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-bold text-slate-400 uppercase border border-slate-700">
                   {replacementAlgo}
                 </span>
-                {/* Valid bit badge */}
                 <span className="exhibit-badge exhibit-badge--valid">Valid</span>
                 <span className="exhibit-badge exhibit-badge--tag">Tag</span>
               </div>
               <span className="font-mono text-[11px] text-slate-500">~2 ns</span>
+            </div>
+
+            {/* Dynamic status line */}
+            <div className={[
+              'text-[10px] font-medium px-2 py-1 rounded-md transition-all duration-300 text-center',
+              isCalc
+                ? 'bg-cyan-500/10 text-cyan-400 animate-pulse'
+                : isHit
+                  ? 'bg-emerald-500/10 text-emerald-400'
+                  : isMiss
+                    ? 'bg-amber-500/10 text-amber-400'
+                    : 'bg-slate-800/40 text-slate-500',
+            ].join(' ')}>
+              {cacheStatusText}
             </div>
 
             {/* Cache rows grid */}
@@ -111,12 +209,11 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 const isActive = activeIndex === row.index
                 const activeHit = isActive && isHit
                 const activeMiss = isActive && isMiss
+                const isChecking = isActive && isCalc
                 const isEvicting = evictedIndex === row.index
 
-                // Determine cell class based on priority: eviction > hit > miss > occupied > empty
                 let cellClass: string
                 if (isEvicting) {
-                  // Crimson eviction flash with physical shake
                   cellClass =
                     'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-[0_0_18px_rgba(239,68,68,0.55)] animate-hardware-shake exhibit-eviction-flash'
                 } else if (activeHit) {
@@ -125,6 +222,9 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 } else if (activeMiss) {
                   cellClass =
                     'border-amber-400/70 bg-amber-500/15 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.35)] animate-pulse'
+                } else if (isChecking) {
+                  cellClass =
+                    'border-cyan-400/60 bg-cyan-500/10 text-cyan-200 shadow-[0_0_10px_rgba(34,211,238,0.25)] animate-pulse'
                 } else if (row.valid) {
                   cellClass =
                     'border-slate-700/70 bg-slate-800/50 text-slate-300'
@@ -139,7 +239,7 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                     role="gridcell"
                     aria-label={`Cache row ${row.index}, ${
                       row.valid ? 'occupied' : 'empty'
-                    }${isEvicting ? ', evicting' : ''}`}
+                    }${isEvicting ? ', evicting' : ''}${isChecking ? ', checking' : ''}`}
                     className={[
                       'flex h-11 flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-all duration-500',
                       cellClass,
@@ -158,6 +258,7 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
 
             <p className="text-[10px] text-slate-600">
               {CACHE_ROWS} direct-mapped rows · tag shown when occupied ·{' '}
+              <span className="text-cyan-500/70">cyan = checking</span> ·{' '}
               <span className="text-rose-500/70">crimson = eviction</span>
             </p>
           </Card>
@@ -166,7 +267,8 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
           <Connector
             active={bottomPathActive}
             tone={isMiss ? 'amber' : 'slate'}
-            label={isMiss ? 'Miss — fetch from RAM' : undefined}
+            label={isMiss ? 'MISS — fetch from RAM' : undefined}
+            subtitle={isMiss ? 'Block transfer in progress...' : undefined}
             dimmed={!bottomPathActive}
           />
 
@@ -196,6 +298,11 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 ~100 ns
               </span>
             </div>
+            {isMiss && (
+              <div className="text-[10px] text-amber-400/80 font-medium px-2 py-1 rounded-md bg-amber-500/10 text-center animate-pulse">
+                Delivering 4-byte block to cache...
+              </div>
+            )}
             <div className="flex flex-col gap-1.5">
               {[0, 1, 2].map((i) => (
                 <div
@@ -211,14 +318,17 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
           </Card>
         </div>
       </Card>
+
+      {/* ── STATUS DASHBOARD (now below the diagram) ────────────────── */}
+      <StatusDashboard state={state} latency={latency} activeIndex={activeIndex} />
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Status dashboard
+// Status dashboard — moved below the hardware diagram
 // ---------------------------------------------------------------------------
-function StatusDashboard({ state, latency }: { state: SimState; latency: number }) {
+function StatusDashboard({ state, latency, activeIndex }: { state: SimState; latency: number; activeIndex: number | null }) {
   const label =
     state === 'idle'
       ? 'IDLE'
@@ -242,17 +352,27 @@ function StatusDashboard({ state, latency }: { state: SimState; latency: number 
         ? 'text-amber-400'
         : 'text-slate-300'
 
+  const detailText = (() => {
+    if (state === 'idle') return 'Awaiting request...'
+    if (state === 'calculating') return activeIndex !== null
+      ? `Comparing tag in row #${activeIndex}...`
+      : 'Sending address to cache controller...'
+    if (state === 'hit') return `Tag matched — data served directly from L1 in ${latency}ns`
+    return `Tag mismatch — block fetched from RAM in ${latency}ns (miss penalty)`
+  })()
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-4 gap-2">
-        <span className="text-[11px] uppercase tracking-wider text-slate-500">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-3 gap-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500">
           Current State
         </span>
         <div className="flex items-center gap-2">
           {state === 'hit' && <CheckCircle2 className="size-5 text-emerald-400" aria-hidden="true" />}
           {state === 'miss' && <AlertTriangle className="size-5 text-amber-400" aria-hidden="true" />}
+          {state === 'calculating' && <Loader2 className="size-5 text-cyan-400 animate-spin" aria-hidden="true" />}
           {state === 'idle' && <Server className="size-5 text-slate-500" aria-hidden="true" />}
-          <span className={['text-2xl font-bold font-mono tracking-wide', stateTone, 
+          <span className={['text-xl font-bold font-mono tracking-wide', stateTone,
             state === 'hit' ? 'neon-text-emerald' : state === 'miss' ? 'neon-text-amber' : ''].join(' ')}>
             {label}
           </span>
@@ -266,23 +386,33 @@ function StatusDashboard({ state, latency }: { state: SimState; latency: number 
             Cache Miss!
           </Badge>
         ) : (
-          <span className="text-[11px] text-slate-600">Awaiting request…</span>
+          <span className="text-[10px] text-slate-600">Awaiting request…</span>
         )}
       </Card>
 
-      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-4 gap-2">
-        <span className="text-[11px] uppercase tracking-wider text-slate-500">
-          Latency Counter
+      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-3 gap-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500">
+          Latency
         </span>
-        <div className="flex items-center gap-2">
-          <span className={['text-2xl font-bold font-mono tracking-wide', latencyTone,
+        <div className="flex items-baseline gap-1">
+          <span className={['text-xl font-bold font-mono tracking-wide', latencyTone,
             state === 'hit' ? 'neon-text-emerald' : state === 'miss' ? 'neon-text-amber' : ''].join(' ')}>
-            {latency > 0 ? latency : '—'} <span className="text-sm">ns</span>
+            {latency > 0 ? latency : '—'}
           </span>
+          <span className="text-xs text-slate-500">ns</span>
         </div>
-        <span className="text-[11px] text-slate-600">
-          Time the CPU waited for this fetch
+        <span className="text-[10px] text-slate-600">
+          {state === 'hit' ? 'Lightning-fast SRAM' : state === 'miss' ? 'DRAM access penalty' : 'CPU wait time'}
         </span>
+      </Card>
+
+      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-3 gap-1.5">
+        <span className="text-[10px] uppercase tracking-wider text-slate-500">
+          Lookup Detail
+        </span>
+        <p className="text-[11px] leading-relaxed text-slate-400">
+          {detailText}
+        </p>
       </Card>
     </div>
   )
@@ -325,7 +455,12 @@ function HardwareBlock({
       </div>
       <div className="flex flex-col">
         <span className="text-sm font-medium text-slate-100">{title}</span>
-        <span className="text-[11px] text-slate-500">{subtitle}</span>
+        <span className={[
+          'text-[11px] transition-colors duration-300',
+          glowing ? 'text-cyan-400' : 'text-slate-500',
+        ].join(' ')}>
+          {subtitle}
+        </span>
       </div>
     </Card>
   )
@@ -338,11 +473,13 @@ function Connector({
   active,
   tone,
   label,
+  subtitle,
   dimmed,
 }: {
   active: boolean
   tone: 'cyan' | 'emerald' | 'amber' | 'slate'
   label?: string
+  subtitle?: string
   dimmed?: boolean
 }) {
   const lineTone = {
@@ -382,18 +519,25 @@ function Connector({
         aria-hidden="true"
       />
       {label ? (
-        <span
-          className={[
-            'mt-0.5 text-[10px] font-medium transition-colors duration-500',
-            tone === 'emerald'
-              ? 'text-emerald-400'
-              : tone === 'amber'
-                ? 'text-amber-400'
-                : 'text-slate-500',
-          ].join(' ')}
-        >
-          {label}
-        </span>
+        <div className="flex flex-col items-center">
+          <span
+            className={[
+              'text-[10px] font-semibold transition-colors duration-500',
+              tone === 'emerald'
+                ? 'text-emerald-400'
+                : tone === 'amber'
+                  ? 'text-amber-400'
+                  : 'text-slate-500',
+            ].join(' ')}
+          >
+            {label}
+          </span>
+          {subtitle && (
+            <span className="text-[9px] text-slate-600 animate-pulse">
+              {subtitle}
+            </span>
+          )}
+        </div>
       ) : null}
     </div>
   )

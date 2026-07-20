@@ -80,6 +80,7 @@ export default function MuseumEngine() {
   const [triggered, setTriggered] = useState(false)
 
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const simulatorRef = useRef<HTMLDivElement>(null)
 
   const handleFetch = useCallback(
     (rawInput: string, overrideForce?: ForceMode) => {
@@ -89,11 +90,16 @@ export default function MuseumEngine() {
       if (!parsed) { setError('Enter a valid hex address, e.g. 0x1A4'); return }
       setError(null)
       setBreakdown(parsed)
-      setSimState('calculating')
       setActiveIndex(parsed.index)
       setLatency(0)
       const effectiveForce = overrideForce ?? forceMode
-      const t = setTimeout(() => {
+
+      // Let the breakdown animation finish (2000ms) before starting the visualizer
+      const tCalc = setTimeout(() => {
+        setSimState('calculating')
+      }, 2000)
+
+      const tResult = setTimeout(() => {
         setCache((currentCache) => {
           const result = lookup(currentCache, parsed, effectiveForce)
           setLatency(result.latency)
@@ -102,16 +108,20 @@ export default function MuseumEngine() {
           else if (result.outcome === 'miss') setMisses(m => m + 1)
           return result.cache
         })
-      }, 650)
-      timersRef.current.push(t)
+      }, 2650)
+      timersRef.current.push(tCalc, tResult)
     },
     [forceMode],
   )
 
   const triggerSimulation = (address: string, fm?: ForceMode) => {
     setTriggered(true)
-    setTimeout(() => setTriggered(false), 1200)
+    setTimeout(() => setTriggered(false), 1800)
     if (fm) setForceMode(fm)
+
+    // Scroll to the simulator panel
+    simulatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
     setTimeout(() => { handleFetch(address, fm) }, 300)
   }
 
@@ -234,6 +244,94 @@ export default function MuseumEngine() {
                 A <strong>researcher (CPU)</strong> works in a <strong>vast library (RAM)</strong>. Walking to shelves = high-latency RAM access. Books on the <strong>small desk (Cache)</strong> = instant retrieval. Because the desk is tiny, they must be selective — governed by the <strong>Principles of Locality</strong>.
               </Callout>
 
+              <SectionTitle color="indigo">Cache Levels: L1, L2, L3</SectionTitle>
+              <p className="text-slate-300 leading-relaxed">
+                Modern CPUs don't have just one cache — they use a <Hl color="cyan">multi-level hierarchy</Hl>. Each level trades speed for capacity:<sup className="text-indigo-400">[1][2]</sup>
+              </p>
+
+              <div className="flex flex-col gap-1.5 my-2">
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="w-16 font-bold text-cyan-400 shrink-0">L1 Cache</span>
+                  <div className="flex-1 bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-cyan-500/40" style={{ width: '15%' }} />
+                  </div>
+                  <span className="w-24 text-right text-slate-500 shrink-0">32–64 KB</span>
+                  <span className="w-24 text-right font-mono text-slate-400 shrink-0">~1 ns</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="w-16 font-bold text-indigo-400 shrink-0">L2 Cache</span>
+                  <div className="flex-1 bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-indigo-500/40" style={{ width: '40%' }} />
+                  </div>
+                  <span className="w-24 text-right text-slate-500 shrink-0">256 KB–1 MB</span>
+                  <span className="w-24 text-right font-mono text-slate-400 shrink-0">~3–10 ns</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="w-16 font-bold text-violet-400 shrink-0">L3 Cache</span>
+                  <div className="flex-1 bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-violet-500/40" style={{ width: '75%' }} />
+                  </div>
+                  <span className="w-24 text-right text-slate-500 shrink-0">4–64 MB</span>
+                  <span className="w-24 text-right font-mono text-slate-400 shrink-0">~10–30 ns</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className="w-16 font-bold text-amber-400 shrink-0">RAM</span>
+                  <div className="flex-1 bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-amber-500/40" style={{ width: '100%' }} />
+                  </div>
+                  <span className="w-24 text-right text-slate-500 shrink-0">8–128 GB</span>
+                  <span className="w-24 text-right font-mono text-slate-400 shrink-0">~50–100 ns</span>
+                </div>
+              </div>
+
+              <Callout color="indigo" icon="" label="INCLUSIVE vs EXCLUSIVE">
+                <strong>Inclusive:</strong> L2 contains a copy of everything in L1. Simplifies coherence but wastes space. <strong>Exclusive:</strong> Each level holds unique data — maximizes total usable cache. Most modern CPUs use a hybrid approach.<sup className="text-indigo-400">[4][14]</sup>
+              </Callout>
+
+              <SectionTitle color="indigo">Real-World Cache Configurations</SectionTitle>
+              <p className="text-slate-300 leading-relaxed">
+                How do these concepts translate to actual hardware? Here are cache specs from modern processors:<sup className="text-indigo-400">[20][21][22]</sup>
+              </p>
+              <div className="rounded-xl border border-slate-800 overflow-hidden">
+                <table className="w-full text-[10px]">
+                  <thead className="bg-slate-800/60 border-b border-slate-800">
+                    <tr className="text-slate-400 uppercase tracking-wider">
+                      <th className="px-2 py-2 text-left">Processor</th>
+                      <th className="px-2 py-2 text-left">L1 (per core)</th>
+                      <th className="px-2 py-2 text-left">L2</th>
+                      <th className="px-2 py-2 text-left">L3</th>
+                      <th className="px-2 py-2 text-left">Mapping</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    <tr>
+                      <td className="px-2 py-2 font-semibold text-cyan-400">Intel i9-13900K</td>
+                      <td className="px-2 py-2 text-slate-400">80 KB (48+32)</td>
+                      <td className="px-2 py-2 text-slate-400">2 MB</td>
+                      <td className="px-2 py-2 text-slate-400">36 MB</td>
+                      <td className="px-2 py-2 text-emerald-400">8–16 way</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-2 font-semibold text-violet-400">Apple M2</td>
+                      <td className="px-2 py-2 text-slate-400">192+128 KB</td>
+                      <td className="px-2 py-2 text-slate-400">16 MB</td>
+                      <td className="px-2 py-2 text-slate-400">—</td>
+                      <td className="px-2 py-2 text-emerald-400">8–12 way</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-2 font-semibold text-amber-400">AMD Ryzen 9 7950X</td>
+                      <td className="px-2 py-2 text-slate-400">64 KB (32+32)</td>
+                      <td className="px-2 py-2 text-slate-400">1 MB</td>
+                      <td className="px-2 py-2 text-slate-400">64 MB</td>
+                      <td className="px-2 py-2 text-emerald-400">8–16 way</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-slate-400 text-[10px]">
+                Notice: all modern CPUs use <Hl color="emerald">Set-Associative mapping</Hl> (8-way or higher) — the "VIP Parking Zones" architecture from Tab 2. No major CPU uses Direct Mapping for L1.
+              </p>
+
               <SectionTitle color="indigo">Principles of Locality</SectionTitle>
               <div className="grid grid-cols-2 gap-2">
                 <Callout color="cyan" icon="" label="TEMPORAL LOCALITY">
@@ -262,6 +360,39 @@ export default function MuseumEngine() {
               </div>
               <p className="text-slate-400 text-[10px]">The cache nearly halves total execution time just by intercepting the vast majority of memory requests.</p>
 
+              <SectionTitle color="indigo">Miss Penalty — Step-by-Step Breakdown</SectionTitle>
+              <p className="text-slate-300 leading-relaxed">
+                How is the <Hl color="amber">82-cycle miss penalty</Hl> calculated? Here's the complete breakdown from the textbook example:<sup className="text-indigo-400">[1][2]</sup>
+              </p>
+              <div className="bg-slate-950 border border-slate-700 rounded-xl p-4 space-y-2">
+                <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider mb-2">
+                  Miss Penalty Calculation (8-word block, 10 cycles/word)
+                </div>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="size-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-400 shrink-0">1</span>
+                  <span className="flex-1 text-slate-300">Failed cache access (check tag, realize miss)</span>
+                  <span className="font-mono font-bold text-rose-400 shrink-0">1 cycle</span>
+                </div>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="size-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-400 shrink-0">2</span>
+                  <span className="flex-1 text-slate-300">Transfer 8 words from RAM → Cache (8 × 10 cycles)</span>
+                  <span className="font-mono font-bold text-amber-400 shrink-0">80 cycles</span>
+                </div>
+                <div className="flex items-center gap-3 text-[10px]">
+                  <span className="size-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-slate-400 shrink-0">3</span>
+                  <span className="flex-1 text-slate-300">Deliver requested word to CPU</span>
+                  <span className="font-mono font-bold text-cyan-400 shrink-0">1 cycle</span>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] border-t border-slate-800 pt-2 mt-1">
+                  <span className="size-5 shrink-0" />
+                  <span className="flex-1 text-white font-bold">Total Miss Penalty</span>
+                  <span className="font-mono font-bold text-rose-400 shrink-0">82 cycles</span>
+                </div>
+              </div>
+              <p className="text-slate-400 text-[10px]">
+                This is why even a small drop in hit rate (e.g. 95% → 90%) causes a <strong>disproportionate</strong> increase in total execution time — each miss costs 82× more than a hit.
+              </p>
+
               <div className="flex flex-col gap-2 mt-2">
                 <TriggerButton label="Try: Cache Hit (0x1A4)" sub="Delivers in ~2ns" color="emerald" onClick={() => triggerSimulation('0x1A4', 'hit')} />
                 <TriggerButton label="Try: Cache Miss (0x1A4)" sub="Forces RAM fetch, 100ns penalty" color="rose" onClick={() => triggerSimulation('0x1A4', 'miss')} />
@@ -272,6 +403,37 @@ export default function MuseumEngine() {
           {/* ─── TAB 2: MAPPING FUNCTIONS ────────────────────────── */}
           {activeTab === 'mapping' && (
             <div className="space-y-4 text-xs">
+              <SectionTitle color="cyan">Anatomy of a Cache Line</SectionTitle>
+              <p className="text-slate-300 leading-relaxed">
+                Every cache slot stores more than just data. The hardware wraps each data block with metadata fields for instant lookup:<sup className="text-cyan-400">[1][4]</sup>
+              </p>
+              <div className="flex gap-0.5 font-mono text-[10px] my-2">
+                <div className="w-10 bg-emerald-500/20 border border-emerald-500/40 rounded-l-lg p-2 text-center">
+                  <div className="text-emerald-300 font-bold text-[11px]">V</div>
+                  <div className="text-slate-500 text-[8px]">Valid</div>
+                  <div className="text-slate-600 text-[8px]">1 bit</div>
+                </div>
+                <div className="w-10 bg-amber-500/20 border border-amber-500/40 p-2 text-center">
+                  <div className="text-amber-300 font-bold text-[11px]">D</div>
+                  <div className="text-slate-500 text-[8px]">Dirty</div>
+                  <div className="text-slate-600 text-[8px]">1 bit</div>
+                </div>
+                <div className="flex-[2] bg-indigo-500/20 border border-indigo-500/40 p-2 text-center">
+                  <div className="text-indigo-300 font-bold text-[11px]">TAG</div>
+                  <div className="text-slate-500 text-[8px]">Identifies block</div>
+                  <div className="text-slate-600 text-[8px]">varies (e.g. 7 bits)</div>
+                </div>
+                <div className="flex-[3] bg-cyan-500/20 border border-cyan-500/40 rounded-r-lg p-2 text-center">
+                  <div className="text-cyan-300 font-bold text-[11px]">DATA BLOCK</div>
+                  <div className="text-slate-500 text-[8px]">Actual cached bytes</div>
+                  <div className="text-slate-600 text-[8px]">e.g. 4 bytes (1 word)</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="text-slate-400"><Hl color="emerald">Valid Bit (V)</Hl> — Is this slot occupied with real data? 0 after boot, 1 after first load.</div>
+                <div className="text-slate-400"><Hl color="amber">Dirty Bit (D)</Hl> — Has this data been modified by the CPU? Only used with Write-Back policy.</div>
+              </div>
+
               <SectionTitle color="cyan">Address Bit Partitioning</SectionTitle>
               <p className="text-slate-300 leading-relaxed">
                 Every memory address is mathematically sliced into three binary fields by the cache controller in nanoseconds:
@@ -639,7 +801,7 @@ export default function MuseumEngine() {
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* RIGHT PANEL: HARDWARE CANVAS                              */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      <div className="w-full lg:w-[58%] relative flex flex-col items-center justify-center p-6 bg-slate-950/95 gap-4">
+      <div ref={simulatorRef} className="w-full lg:w-[58%] relative flex flex-col items-center justify-start p-6 bg-slate-950/95 gap-4">
 
         {/* Background ambient glow */}
         <div className={['absolute inset-0 opacity-20 transition-colors duration-1000 pointer-events-none', glowMap[activeTab]].join(' ')}></div>
