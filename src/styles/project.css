@@ -192,21 +192,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   }
 }
 
-/* =============================================================================
-   EXHIBIT PREMIUM COMPONENT STYLES
-   Custom visual components for the Cache Memory virtual exhibit.
-   All classes are prefixed with "exhibit-" to avoid collisions with global.css.
-   ============================================================================= */
-
-/* ---------------------------------------------------------------------------
-   Callout / Analogy Cards
-   Usage: <blockquote class="exhibit-callout exhibit-callout--blue">
-   --------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------
-   Callout cards — designed for WHITE article background.
-   Text colours are all dark enough to pass WCAG AA contrast.
-   --------------------------------------------------------------------------- */
 
 .exhibit-callout {
   display: flex;
@@ -241,10 +226,9 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   line-height: 1.35;
 }
 
-/* Body text — dark for white backgrounds */
 .exhibit-callout p {
   font-size: 0.9375rem;
-  color: #334155; /* slate-700 — readable on white */
+  color: #334155;
   margin: 0.5rem 0;
 }
 
@@ -262,12 +246,12 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 .exhibit-callout li { margin: 0.4rem 0; }
 
 .exhibit-callout strong {
-  color: #0f172a; /* slate-900 — near-black for emphasis */
+  color: #0f172a;
   font-weight: 700;
 }
 
 .exhibit-callout em {
-  color: #475569; /* slate-600 */
+  color: #475569;
   font-style: italic;
 }
 
@@ -280,49 +264,41 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   color: #1e293b;
 }
 
-/* ── Blue variant (Library / Core Concept) ── */
+
 .exhibit-callout--blue {
-  background-color: #eff6ff; /* blue-50 */
-  border-color: #3b82f6;    /* blue-500 */
+  background-color: #eff6ff;
+  border-color: #3b82f6;
 }
-.exhibit-callout--blue .exhibit-callout__title { color: #1d4ed8; } /* blue-700 */
+.exhibit-callout--blue .exhibit-callout__title { color: #1d4ed8; }
 
-/* ── Cyan variant (AMAT / formulas) ── */
+
 .exhibit-callout--cyan {
-  background-color: #ecfeff; /* cyan-50 */
-  border-color: #06b6d4;    /* cyan-500 */
+  background-color: #ecfeff;
+  border-color: #06b6d4;
 }
-.exhibit-callout--cyan .exhibit-callout__title { color: #0e7490; } /* cyan-700 */
+.exhibit-callout--cyan .exhibit-callout__title { color: #0e7490; }
 
-/* ── Purple variant (Direct Mapping) ── */
+
 .exhibit-callout--purple {
-  background-color: #faf5ff; /* purple-50 */
-  border-color: #a855f7;    /* purple-500 */
+  background-color: #faf5ff;
+  border-color: #a855f7;
 }
-.exhibit-callout--purple .exhibit-callout__title { color: #7e22ce; } /* purple-700 */
+.exhibit-callout--purple .exhibit-callout__title { color: #7e22ce; }
 
-/* ── Amber variant (Fully Associative) ── */
+
 .exhibit-callout--amber {
-  background-color: #fffbeb; /* amber-50 */
-  border-color: #f59e0b;    /* amber-500 */
+  background-color: #fffbeb;
+  border-color: #f59e0b;
 }
-.exhibit-callout--amber .exhibit-callout__title { color: #b45309; } /* amber-700 */
+.exhibit-callout--amber .exhibit-callout__title { color: #b45309; }
 
-/* ── Emerald variant (Set-Associative) ── */
+
 .exhibit-callout--emerald {
-  background-color: #f0fdf4; /* green-50 */
-  border-color: #10b981;    /* emerald-500 */
+  background-color: #f0fdf4;
+  border-color: #10b981;
 }
-.exhibit-callout--emerald .exhibit-callout__title { color: #065f46; } /* emerald-800 */
+.exhibit-callout--emerald .exhibit-callout__title { color: #065f46; }
 
-/* ---------------------------------------------------------------------------
-   Write Policy Comparison Cards
-   Usage: <div class="exhibit-policy-card exhibit-policy-card--green">
-   --------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------------
-   Write Policy Comparison Cards — white background compatible
-   --------------------------------------------------------------------------- */
 
 .exhibit-policy-card {
   border-radius: 0.875rem;
@@ -340,13 +316,13 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 }
 
 .exhibit-policy-card--green {
-  background-color: #f0fdf4; /* green-50 */
-  border-color: #86efac;    /* green-300 */
+  background-color: #f0fdf4;
+  border-color: #86efac;
 }
 
 .exhibit-policy-card--amber {
-  background-color: #fffbeb; /* amber-50 */
-  border-color: #fcd34d;    /* amber-300 */
+  background-color: #fffbeb;
+  border-color: #fcd34d;
 }
 
 .exhibit-policy-card__header {
@@ -362,8 +338,8 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   font-weight: 700;
 }
 
-.exhibit-policy-card--green .exhibit-policy-card__badge { color: #15803d; } /* green-700 */
-.exhibit-policy-card--amber .exhibit-policy-card__badge { color: #b45309; } /* amber-700 */
+.exhibit-policy-card--green .exhibit-policy-card__badge { color: #15803d; }
+.exhibit-policy-card--amber .exhibit-policy-card__badge { color: #b45309; }
 
 .exhibit-policy-card__alt {
   font-size: 0.8rem;
@@ -373,17 +349,17 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 
 .exhibit-policy-card p {
   font-size: 0.9rem;
-  color: #334155; /* slate-700 — readable on light bg */
+  color: #334155;
   line-height: 1.65;
   margin: 0;
 }
 
-.exhibit-policy-card strong { color: #0f172a; } /* slate-900 */
+.exhibit-policy-card strong { color: #0f172a; }
 
 
 .exhibit-policy-card__pros {
-  background: #d1fae5; /* green-100 */
-  color: #14532d;      /* green-900 */
+  background: #d1fae5;
+  color: #14532d;
   border-left: 3px solid #16a34a;
   font-weight: 500;
   font-size: 0.875rem;
@@ -393,8 +369,8 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 }
 
 .exhibit-policy-card__cons {
-  background: #fee2e2; /* red-100 */
-  color: #7f1d1d;      /* red-900 */
+  background: #fee2e2;
+  color: #7f1d1d;
   border-left: 3px solid #dc2626;
   font-weight: 500;
   font-size: 0.875rem;
@@ -403,16 +379,11 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   line-height: 1.6;
 }
 
-/* ---------------------------------------------------------------------------
-   Simulator dark banner wrapper
-   All text colours hardcoded here so they can't be overridden by the
-   global body { color: #1e1e1e } rule.
-   --------------------------------------------------------------------------- */
 
 .exhibit-simulator-wrap {
-  background-color: #0f172a; /* slate-900 */
-  border-color: #475569;     /* slate-600 */
-  color: #e2e8f0;            /* slate-200 — all children inherit this */
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #e2e8f0;
 }
 
 .exhibit-simulator-intro {
@@ -420,7 +391,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   color: #e2e8f0;
 }
 
-/* Force all p tags inside the intro to be light, regardless of global rules */
+
 .exhibit-simulator-intro p {
   color: #cbd5e1 !important;
 }
@@ -433,7 +404,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   height: 2.25rem;
   border-radius: 0.5rem;
   background-color: rgba(34, 211, 238, 0.15);
-  color: #67e8f9; /* cyan-300 */
+  color: #67e8f9;
   font-size: 1.125rem;
   flex-shrink: 0;
 }
@@ -444,49 +415,45 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #22d3ee !important; /* cyan-400 — force over inherited dark */
+  color: #22d3ee !important;
   margin: 0 0 0.15rem 0;
 }
 
 .exhibit-simulator-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f8fafc !important; /* near-white — force over inherited dark */
+  color: #f8fafc !important;
   line-height: 1.3;
   margin: 0;
 }
 
 .exhibit-simulator-desc {
   font-size: 0.875rem;
-  color: #cbd5e1 !important; /* slate-300 — force over inherited dark */
+  color: #cbd5e1 !important;
   line-height: 1.65;
   max-width: 42rem;
   margin: 0.5rem 0 0 0;
 }
 
 .exhibit-simulator-highlight--cyan {
-  color: #67e8f9 !important; /* cyan-300 */
+  color: #67e8f9 !important;
   font-weight: 600;
 }
 
 .exhibit-simulator-highlight--green {
-  color: #4ade80 !important; /* green-400 */
+  color: #4ade80 !important;
   font-weight: 600;
 }
 
 .exhibit-simulator-highlight--amber {
-  color: #fbbf24 !important; /* amber-400 */
+  color: #fbbf24 !important;
   font-weight: 600;
 }
 
-/* ---------------------------------------------------------------------------
-   Data Tables
-   Usage: <div class="exhibit-table-wrap">
-   --------------------------------------------------------------------------- */
 
 .exhibit-table-wrap table {
   border-collapse: collapse;
-  background: rgba(15, 23, 42, 0.6); /* slate-950/60 */
+  background: rgba(15, 23, 42, 0.6);
 }
 
 .exhibit-table-wrap thead tr {
@@ -506,9 +473,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   border-radius: 3px;
 }
 
-/* ---------------------------------------------------------------------------
-   Article horizontal rules — styled as glowing dividers
-   --------------------------------------------------------------------------- */
 
 .article hr {
   border: none;
@@ -523,9 +487,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   margin: 2.5rem 0;
 }
 
-/* ---------------------------------------------------------------------------
-   Responsive grid utilities (used inline in MDX for policy card layout)
-   --------------------------------------------------------------------------- */
 
 @media (max-width: 767px) {
   .exhibit-callout {
@@ -543,14 +504,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   }
 }
 
-/* =============================================================================
-   NEW IMMERSIVE MUSEUM EXHIBIT — PREMIUM ADDITIONS
-   All classes prefixed "exhibit-" to avoid collisions.
-   ============================================================================= */
-
-/* ---------------------------------------------------------------------------
-   Hero Banner
-   --------------------------------------------------------------------------- */
 
 @keyframes hero-gradient-pan {
   0%   { background-position: 0% 50%; }
@@ -594,7 +547,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: fade-in-up 0.8s ease both;
 }
 
-/* Animated grid overlay */
+
 .exhibit-hero::before {
   content: '';
   position: absolute;
@@ -606,7 +559,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   pointer-events: none;
 }
 
-/* Radial glow orbs */
+
 .exhibit-hero::after {
   content: '';
   position: absolute;
@@ -696,9 +649,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   letter-spacing: 0.04em;
 }
 
-/* ---------------------------------------------------------------------------
-   Section Part Headers
-   --------------------------------------------------------------------------- */
 
 .exhibit-part-header {
   display: flex;
@@ -779,9 +729,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   max-width: 8rem;
 }
 
-/* ---------------------------------------------------------------------------
-   Formula Display Block
-   --------------------------------------------------------------------------- */
 
 .exhibit-formula-block {
   position: relative;
@@ -823,16 +770,16 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 }
 
 .exhibit-formula-block__formula .f-var {
-  color: #34d399; /* emerald - variables */
+  color: #34d399;
 }
 
 .exhibit-formula-block__formula .f-op {
-  color: #818cf8; /* indigo - operators */
+  color: #818cf8;
   padding: 0 0.2em;
 }
 
 .exhibit-formula-block__formula .f-val {
-  color: #22d3ee; /* cyan - values */
+  color: #22d3ee;
 }
 
 .exhibit-formula-block__subtext {
@@ -842,9 +789,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   display: block;
 }
 
-/* ---------------------------------------------------------------------------
-   Interactive Trigger Buttons
-   --------------------------------------------------------------------------- */
 
 .exhibit-trigger-btn {
   display: inline-flex;
@@ -893,7 +837,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   line-height: 1;
 }
 
-/* Trigger container — sits inline with text */
 .exhibit-trigger-wrap {
   display: flex;
   align-items: center;
@@ -912,9 +855,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   font-family: Consolas, Monaco, monospace;
 }
 
-/* ---------------------------------------------------------------------------
-   Dark-mode Callout variants (for use on dark page backgrounds)
-   --------------------------------------------------------------------------- */
 
 .exhibit-callout--dark-blue {
   background: rgba(29, 78, 216, 0.1);
@@ -962,9 +902,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 .exhibit-callout--dark-rose ol { color: #cbd5e1; }
 .exhibit-callout--dark-rose li { color: #cbd5e1; }
 
-/* ---------------------------------------------------------------------------
-   Premium Dark Tables
-   --------------------------------------------------------------------------- */
 
 .exhibit-table-dark {
   width: 100%;
@@ -1019,9 +956,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 .exhibit-table-dark .td-mono          { font-family: Consolas, Monaco, monospace; font-size: 0.8rem; }
 .exhibit-table-dark .td-star          { color: #fbbf24; }
 
-/* ---------------------------------------------------------------------------
-   Write Policy Cards (Dark variant)
-   --------------------------------------------------------------------------- */
 
 .exhibit-policy-card--dark {
   border-radius: 0.875rem;
@@ -1091,9 +1025,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   line-height: 1.6;
 }
 
-/* ---------------------------------------------------------------------------
-   Academic Citation Badges (Valid bit / Tag / Index / Offset / Block Set)
-   --------------------------------------------------------------------------- */
 
 .exhibit-badge {
   display: inline-flex;
@@ -1151,9 +1082,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   color: #fbbf24;
 }
 
-/* ---------------------------------------------------------------------------
-   Simulator centerpiece wrapper
-   --------------------------------------------------------------------------- */
 
 .exhibit-simulator-centerpiece {
   position: relative;
@@ -1181,7 +1109,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   z-index: 10;
 }
 
-/* Label strip above the simulator */
+
 .exhibit-simulator-header {
   display: flex;
   align-items: center;
@@ -1199,9 +1127,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   color: #818cf8;
 }
 
-/* ---------------------------------------------------------------------------
-   References section
-   --------------------------------------------------------------------------- */
 
 .exhibit-references {
   margin: 3rem 0 0;
@@ -1248,9 +1173,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   color: #93c5fd;
 }
 
-/* ---------------------------------------------------------------------------
-   Eviction flash keyframe (used by visualizer.tsx)
-   --------------------------------------------------------------------------- */
 
 @keyframes eviction-flash {
   0%   { box-shadow: 0 0 0px rgba(239,68,68,0); }
@@ -1263,9 +1185,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: eviction-flash 0.9s ease forwards, pulse 0.9s ease infinite !important;
 }
 
-/* ---------------------------------------------------------------------------
-   LRU/MRU comparison cards (dark)
-   --------------------------------------------------------------------------- */
 
 .exhibit-algo-card {
   border-radius: 1rem;
@@ -1336,9 +1255,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   border-left: 3px solid #10b981;
 }
 
-/* ---------------------------------------------------------------------------
-   Responsive tweaks for new components
-   --------------------------------------------------------------------------- */
 
 @media (max-width: 767px) {
   .exhibit-hero {
@@ -1363,7 +1279,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   }
 }
 
-/* Custom Scrollbar for Left Panel */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -1378,11 +1293,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   background: rgba(71, 85, 105, 0.8);
 }
 
-/* ==========================================================================
-   Sci-Fi UI/UX Animations (The Absolute Wow Factor)
-   ========================================================================== */
-
-/* 1. Kinetic Data Flow Packet */
 @keyframes data-packet {
   0% { transform: translateY(-100%); opacity: 0; }
   10% { opacity: 1; }
@@ -1394,7 +1304,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: data-packet 1s ease-in-out forwards;
 }
 
-/* 2. Cyber Pulse (Expanding sonar ring for hardware activity) */
+
 @keyframes cyber-pulse {
   0% { transform: scale(1); opacity: 0.8; }
   100% { transform: scale(1.6); opacity: 0; }
@@ -1410,7 +1320,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   z-index: -1;
 }
 
-/* 3. Hardware Eviction Shake (Aggressive eviction) */
+
 @keyframes hardware-shake {
   0%, 100% { transform: translateX(0); }
   20% { transform: translateX(-2px); }
@@ -1423,7 +1333,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: hardware-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-/* 4. Ambient Breathing (Idle hardware glow) */
+
 @keyframes ambient-breathe {
   0%, 100% { box-shadow: 0 0 10px rgba(34, 211, 238, 0.05); }
   50% { box-shadow: 0 0 25px rgba(34, 211, 238, 0.15); }
@@ -1433,7 +1343,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: ambient-breathe 4s ease-in-out infinite;
 }
 
-/* 5. Step-by-step breakdown animations */
+
 @keyframes nibble-appear {
   0% { opacity: 0; transform: scale(0.7) translateY(4px); filter: brightness(2); }
   60% { opacity: 1; transform: scale(1.08) translateY(-1px); filter: brightness(1.3); }
@@ -1504,7 +1414,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   pointer-events: none;
 }
 
-/* Neon text shadows for critical telemetry */
+
 .neon-text-emerald {
   text-shadow: 0 0 10px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
 }
@@ -1517,11 +1427,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.3);
 }
 
-/* ==========================================================================
-   ENHANCED MULTI-STEP VISUALIZER ANIMATIONS
-   ========================================================================== */
 
-/* Reverse data packet (flowing upward — for hit response & RAM return) */
 @keyframes data-packet-up {
   0% { transform: translateY(100%); opacity: 0; }
   10% { opacity: 1; }
@@ -1533,7 +1439,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: data-packet-up 0.8s ease-in-out forwards;
 }
 
-/* Delayed secondary particle trails */
+
 @keyframes data-packet-delayed-kf {
   0% { transform: translateY(-100%); opacity: 0; }
   15% { opacity: 0.6; }
@@ -1556,7 +1462,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: data-packet-up-delayed-kf 1s ease-in-out 0.3s forwards;
 }
 
-/* Cache scanning beam (horizontal sweep on cache card) */
+
 @keyframes cache-scan-beam {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
@@ -1575,7 +1481,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: cache-scan-beam 1.5s ease-in-out infinite;
 }
 
-/* Result flash — green (hit) */
+
 @keyframes result-flash-green {
   0% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
   20% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
@@ -1587,7 +1493,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: result-flash-green 0.8s ease-out forwards;
 }
 
-/* Result flash — amber (miss) */
+
 @keyframes result-flash-amber {
   0% { box-shadow: 0 0 0px rgba(245, 158, 11, 0); }
   20% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.6); }
@@ -1599,7 +1505,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: result-flash-amber 0.8s ease-out forwards;
 }
 
-/* Row scanning (individual cache cell highlight with sweep) */
+
 @keyframes row-scan {
   0% { box-shadow: 0 0 0px rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.2); }
   30% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.5); border-color: rgba(34, 211, 238, 0.8); }
@@ -1611,7 +1517,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: row-scan 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Block loading into cache (pulsing glow when new data arrives) */
+
 @keyframes block-load {
   0% { opacity: 0.5; transform: scale(0.95); box-shadow: 0 0 0px rgba(34, 211, 238, 0); }
   30% { opacity: 1; transform: scale(1.05); box-shadow: 0 0 20px rgba(34, 211, 238, 0.5); }
@@ -1623,7 +1529,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: block-load 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Hit ripple — expanding ring effect */
+
 @keyframes hit-ripple {
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5), 0 0 0 0 rgba(16, 185, 129, 0.3); }
   40% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 0 16px 0 rgba(16, 185, 129, 0.4); }
@@ -1634,7 +1540,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: hit-ripple 0.8s ease-out forwards;
 }
 
-/* RAM activity bars animation */
 @keyframes ram-bars {
   0% { opacity: 0.3; transform: scaleX(0.8); }
   50% { opacity: 1; transform: scaleX(1.02); }
@@ -1646,7 +1551,7 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   transform-origin: left;
 }
 
-/* RAM deliver text shimmer */
+
 @keyframes ram-deliver {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 1; }
@@ -1656,7 +1561,6 @@ a:not(.cache-simulator *):not(.cache-simulator) {
   animation: ram-deliver 1s ease-in-out infinite;
 }
 
-/* Narration step entry animation */
 @keyframes narration-enter {
   0% { opacity: 0; transform: translateX(-8px); }
   100% { opacity: 1; transform: translateX(0); }
@@ -1664,4 +1568,4 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 
 .animate-narration-enter {
   animation: narration-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
+}
