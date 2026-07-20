@@ -144,6 +144,15 @@ export default function MuseumEngine() {
     canon:         'bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.5)_0%,transparent_70%)]',
   }
 
+  // Each tab gets its own simulator identity in the right-hand panel
+  const simulatorTitleMap: Record<TabId, string> = {
+    architecture:  'Live Telemetry',
+    mapping:       'Mapping Engine',
+    replacement:   'Eviction Engine',
+    writepolicies: 'Write Policy Engine',
+    canon:         'Live Telemetry',
+  }
+
   return (
     <div className="flex flex-col lg:flex-row w-full min-h-[750px] bg-slate-950/40 backdrop-blur-3xl text-slate-100 rounded-2xl border border-slate-700/50 ring-1 ring-white/10 ring-inset overflow-hidden font-sans shadow-[0_0_50px_rgba(34,211,238,0.15)] my-6">
 
@@ -806,31 +815,33 @@ export default function MuseumEngine() {
         {/* Background ambient glow */}
         <div className={['absolute inset-0 opacity-20 transition-colors duration-1000 pointer-events-none', glowMap[activeTab]].join(' ')}></div>
 
-        {/* Scoreboard */}
-        <div className="relative w-full flex items-center gap-3">
-          <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between">
-            <div>
-              <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
-              <div className="text-2xl font-bold text-emerald-400">{hits}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
-              <div className="text-2xl font-bold text-amber-400">{misses}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
-              <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
-                {hitRate}{totalOps > 0 ? '%' : ''}
+        {/* Scoreboard — only meaningful while the address-lookup simulator (architecture tab) is active */}
+        {activeTab === 'architecture' && (
+          <div className="relative w-full flex items-center gap-3">
+            <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between">
+              <div>
+                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
+                <div className="text-2xl font-bold text-emerald-400">{hits}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
+                <div className="text-2xl font-bold text-amber-400">{misses}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
+                <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
+                  {hitRate}{totalOps > 0 ? '%' : ''}
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => { setHits(0); setMisses(0) }}
+              className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
+            >
+              Reset
+            </button>
           </div>
-          <button
-            onClick={() => { setHits(0); setMisses(0) }}
-            className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
-          >
-            Reset
-          </button>
-        </div>
+        )}
 
         {/* Simulator Card */}
         <div className={['relative w-full rounded-xl bg-slate-950/90 backdrop-blur-xl border transition-all duration-700 overflow-hidden shadow-2xl',
@@ -842,13 +853,15 @@ export default function MuseumEngine() {
                 <span className="flex size-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   <MemoryStick className="size-4" />
                 </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">Live Telemetry</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">{simulatorTitleMap[activeTab]}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9px] font-mono text-slate-400 uppercase flex items-center gap-1">
-                  <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                  {replacementAlgo.toUpperCase()} Policy
-                </div>
+                {activeTab === 'replacement' && (
+                  <div className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9px] font-mono text-slate-400 uppercase flex items-center gap-1">
+                    <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    {replacementAlgo.toUpperCase()} Policy
+                  </div>
+                )}
                 <div className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[9px] font-mono text-slate-400 uppercase flex items-center gap-1">
                   <div className="size-1.5 rounded-full bg-cyan-500 animate-pulse"></div>
                   Online
@@ -856,22 +869,42 @@ export default function MuseumEngine() {
               </div>
             </header>
 
-            <SimulatorControls
-              breakdown={breakdown}
-              error={error}
-              isBusy={simState === 'calculating'}
-              forceMode={forceMode}
-              onForceModeChange={setForceMode}
-              onFetch={handleFetch}
-            />
+            {activeTab === 'architecture' && (
+              <>
+                <SimulatorControls
+                  breakdown={breakdown}
+                  error={error}
+                  isBusy={simState === 'calculating'}
+                  forceMode={forceMode}
+                  onForceModeChange={setForceMode}
+                  onFetch={handleFetch}
+                />
 
-            <Visualizer
-              state={simState}
-              latency={latency}
-              cache={cache}
-              activeIndex={activeIndex}
-              replacementAlgo={replacementAlgo}
-            />
+                <Visualizer
+                  state={simState}
+                  latency={latency}
+                  cache={cache}
+                  activeIndex={activeIndex}
+                  replacementAlgo={replacementAlgo}
+                />
+              </>
+            )}
+
+            {activeTab === 'mapping' && <MappingSimulator />}
+
+            {activeTab === 'replacement' && (
+              <ReplacementSimulator algo={replacementAlgo} onAlgoChange={setReplacementAlgo} />
+            )}
+
+            {activeTab === 'writepolicies' && <WritePolicySimulator />}
+
+            {activeTab === 'canon' && (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
+                <div className="text-slate-500 text-[11px] font-mono">
+                  This tab is reference-only — no live simulator.
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -959,5 +992,726 @@ function TabButton({ id, label, icon, active, onClick, color }: {
       </div>
       <span className="font-medium text-[11px] leading-tight">{label}</span>
     </button>
+  )
+}
+
+// ─── MAPPING FUNCTIONS SIMULATOR ──────────────────────────────────────────
+// Self-contained: models a tiny 4-slot cache over a 16-block memory space
+// (4-bit block address) so students can watch Direct / Set-Associative /
+// Fully-Associative placement decisions play out live.
+
+type MapType = 'direct' | 'set2' | 'full'
+const MAP_TOTAL_SLOTS = 4
+const MAP_TOTAL_BLOCKS = 16
+
+type MapSlot = { block: number | null }
+type MapLogEntry = {
+  block: number
+  outcome: 'hit' | 'miss'
+  placedSlot: number
+  evictedSlot: number | null
+  evictedBlock: number | null
+}
+
+function candidateSlots(block: number, mapType: MapType): number[] {
+  if (mapType === 'direct') return [block % MAP_TOTAL_SLOTS]
+  if (mapType === 'set2') {
+    const set = block % 2
+    const waysPerSet = MAP_TOTAL_SLOTS / 2
+    return Array.from({ length: waysPerSet }, (_, w) => set * waysPerSet + w)
+  }
+  return Array.from({ length: MAP_TOTAL_SLOTS }, (_, i) => i) // fully associative
+}
+
+function bitInfo(mapType: MapType) {
+  if (mapType === 'direct') return { tagBits: 2, indexBits: 2, label: 'Direct Mapping' }
+  if (mapType === 'set2') return { tagBits: 3, indexBits: 1, label: 'Set-Associative (2-way)' }
+  return { tagBits: 4, indexBits: 0, label: 'Fully Associative' }
+}
+
+const MAP_TYPE_META: Record<MapType, { label: string; color: 'cyan' | 'emerald' | 'violet'; formula: string }> = {
+  direct: { label: 'Direct', color: 'cyan', formula: 'slot = block mod 4' },
+  set2: { label: 'Set-Assoc. (2-way)', color: 'emerald', formula: 'set = block mod 2 → any way in set' },
+  full: { label: 'Fully Assoc.', color: 'violet', formula: 'any of the 4 slots' },
+}
+
+function MappingSimulator() {
+  const [mapType, setMapType] = useState<MapType>('direct')
+  const [block, setBlock] = useState(1)
+  const [slots, setSlots] = useState<MapSlot[]>(() => Array.from({ length: MAP_TOTAL_SLOTS }, () => ({ block: null })))
+  const [order, setOrder] = useState<number[]>([]) // slot indices, oldest-used first (LRU order)
+  const [log, setLog] = useState<MapLogEntry[]>([])
+  const [flash, setFlash] = useState<{ slot: number; kind: 'hit' | 'placed' | 'evicted' }[]>([])
+
+  const candidates = candidateSlots(block, mapType)
+  const bits = bitInfo(mapType)
+  const willHit = candidates.some(s => slots[s].block === block)
+
+  const touchOrder = (prev: number[], slot: number) => [...prev.filter(s => s !== slot), slot]
+
+  const runAccess = (b: number) => {
+    setSlots(prevSlots => {
+      const cslots = candidateSlots(b, mapType)
+      const hitSlot = cslots.find(s => prevSlots[s].block === b)
+
+      if (hitSlot !== undefined) {
+        setOrder(o => touchOrder(o, hitSlot))
+        setFlash([{ slot: hitSlot, kind: 'hit' }])
+        setLog(l => [{ block: b, outcome: 'hit' as const, placedSlot: hitSlot, evictedSlot: null, evictedBlock: null }, ...l].slice(0, 6))
+        return prevSlots
+      }
+
+      // miss — find an empty candidate slot first
+      const emptySlot = cslots.find(s => prevSlots[s].block === null)
+      let targetSlot: number
+      let evictedBlock: number | null = null
+
+      if (emptySlot !== undefined) {
+        targetSlot = emptySlot
+      } else {
+        // evict the least-recently-used slot among the candidates
+        const lruOrdered = [...cslots].sort((a, b2) => {
+          const ai = order.indexOf(a), bi = order.indexOf(b2)
+          return ai - bi
+        })
+        targetSlot = lruOrdered[0]
+        evictedBlock = prevSlots[targetSlot].block
+      }
+
+      const next = prevSlots.map((s, i) => (i === targetSlot ? { block: b } : s))
+      setOrder(o => touchOrder(o, targetSlot))
+      setFlash(evictedBlock !== null
+        ? [{ slot: targetSlot, kind: 'evicted' }]
+        : [{ slot: targetSlot, kind: 'placed' }])
+      setLog(l => [{ block: b, outcome: 'miss' as const, placedSlot: targetSlot, evictedSlot: evictedBlock !== null ? targetSlot : null, evictedBlock }, ...l].slice(0, 6))
+      return next
+    })
+    setTimeout(() => setFlash([]), 900)
+  }
+
+  const runConflictDemo = () => {
+    setSlots(Array.from({ length: MAP_TOTAL_SLOTS }, () => ({ block: null })))
+    setOrder([])
+    setLog([])
+    const sequence = [1, 5, 1, 5]
+    sequence.forEach((b, i) => setTimeout(() => runAccess(b), i * 950))
+  }
+
+  const reset = () => {
+    setSlots(Array.from({ length: MAP_TOTAL_SLOTS }, () => ({ block: null })))
+    setOrder([])
+    setLog([])
+    setFlash([])
+  }
+
+  const meta = MAP_TYPE_META[mapType]
+  const colorClasses = {
+    cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
+    emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
+    violet: 'bg-violet-500/20 text-violet-400 border-violet-500/50',
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      {/* Mapping type selector */}
+      <div className="flex gap-1.5">
+        {(['direct', 'set2', 'full'] as const).map(mt => (
+          <button
+            key={mt}
+            onClick={() => setMapType(mt)}
+            className={['flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all',
+              mapType === mt ? colorClasses[MAP_TYPE_META[mt].color] : 'bg-slate-900 text-slate-500 border-slate-700 hover:text-slate-300'
+            ].join(' ')}
+          >
+            {MAP_TYPE_META[mt].label}
+          </button>
+        ))}
+      </div>
+
+      {/* Address bit breakdown */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-3">
+        <div className="text-[9px] text-slate-500 font-mono uppercase tracking-wider mb-2">
+          Block {block} · 4-bit address · {bits.label}
+        </div>
+        <div className="flex gap-1 font-mono text-[10px]">
+          <div className="rounded-l-lg bg-indigo-500/20 border border-indigo-500/40 p-2 text-center" style={{ flex: Math.max(bits.tagBits, 0.5) }}>
+            <div className="text-indigo-300 font-bold">TAG</div>
+            <div className="text-slate-500 text-[8px]">{bits.tagBits} bits</div>
+          </div>
+          {bits.indexBits > 0 && (
+            <div className="bg-cyan-500/20 border border-cyan-500/40 p-2 text-center" style={{ flex: bits.indexBits }}>
+              <div className="text-cyan-300 font-bold">{mapType === 'set2' ? 'SET' : 'INDEX'}</div>
+              <div className="text-slate-500 text-[8px]">{bits.indexBits} bit{bits.indexBits > 1 ? 's' : ''}</div>
+            </div>
+          )}
+          <div className="rounded-r-lg bg-slate-800 border border-slate-700 p-2 text-center flex-[0.6]">
+            <div className="text-slate-400 font-bold">···</div>
+            <div className="text-slate-600 text-[8px]">offset</div>
+          </div>
+        </div>
+        <div className="text-center text-[10px] text-slate-500 font-mono mt-2">{meta.formula}</div>
+      </div>
+
+      {/* Block picker */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setBlock(b => (b + MAP_TOTAL_BLOCKS - 1) % MAP_TOTAL_BLOCKS)}
+          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 font-bold">−</button>
+        <div className="flex-1 grid grid-cols-8 gap-1">
+          {Array.from({ length: MAP_TOTAL_BLOCKS }, (_, b) => (
+            <button
+              key={b}
+              onClick={() => setBlock(b)}
+              className={['py-1.5 rounded text-[10px] font-mono font-bold border transition-all',
+                b === block ? 'bg-white/10 border-white/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+              ].join(' ')}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => setBlock(b => (b + 1) % MAP_TOTAL_BLOCKS)}
+          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 font-bold">+</button>
+      </div>
+
+      {/* Cache slots visualization */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
+            Cache ({MAP_TOTAL_SLOTS} slots{mapType === 'set2' ? ' · 2 sets × 2 ways' : ''})
+          </div>
+          <div className={['text-[9px] font-mono font-bold px-2 py-0.5 rounded', willHit ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'].join(' ')}>
+            Block {block} will {willHit ? 'HIT' : 'MISS'}
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {slots.map((s, i) => {
+            const isCandidate = candidates.includes(i)
+            const f = flash.find(fl => fl.slot === i)
+            let cls = 'bg-slate-900 border-slate-800 text-slate-600'
+            if (f?.kind === 'hit') cls = 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 scale-105'
+            else if (f?.kind === 'evicted') cls = 'bg-rose-500/20 border-rose-500/60 text-rose-300 scale-105'
+            else if (f?.kind === 'placed') cls = 'bg-cyan-500/20 border-cyan-500/60 text-cyan-300 scale-105'
+            else if (isCandidate) cls = 'bg-slate-800 border-cyan-500/40 text-slate-200'
+            else if (s.block !== null) cls = 'bg-slate-800 border-slate-700 text-slate-300'
+            return (
+              <div key={i} className={['rounded-lg border p-3 text-center font-mono transition-all duration-300', cls].join(' ')}>
+                <div className="text-[8px] text-slate-500 mb-1">Slot {i}</div>
+                <div className="text-lg font-bold">{s.block === null ? '—' : s.block}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button onClick={() => runAccess(block)}
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          Access Block {block}
+        </button>
+        <button onClick={runConflictDemo}
+          className="flex-1 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40 text-[10px] font-bold uppercase tracking-wide text-rose-300 hover:bg-rose-500/20 transition-all">
+          Conflict Demo (1→5→1→5)
+        </button>
+        <button onClick={reset}
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          Reset
+        </button>
+      </div>
+
+      {/* Access log */}
+      {log.length > 0 && (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[10px] space-y-1">
+          <div className="text-slate-500 uppercase tracking-wider mb-1">Access Log</div>
+          {log.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2 text-slate-400">
+              <span className="text-slate-600">{i === 0 ? 'now' : `-${i}`}</span>
+              <span className="text-slate-200 font-bold">block {entry.block}</span>
+              <span className={entry.outcome === 'hit' ? 'text-emerald-400' : 'text-amber-400'}>
+                {entry.outcome === 'hit' ? 'HIT' : 'MISS'}
+              </span>
+              <span className="text-slate-600">→ slot {entry.placedSlot}</span>
+              {entry.evictedBlock !== null && <span className="text-rose-400">evicted block {entry.evictedBlock}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── REPLACEMENT ALGORITHMS SIMULATOR ─────────────────────────────────────
+// Self-contained: a 4-slot cache fed by lettered block requests (A-H).
+// Lets you step through accesses (or run presets) under LRU / MRU / FIFO /
+// Random and watch victim-selection diverge in real time.
+
+const REPL_SLOTS = 4
+const REPL_BLOCKS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
+type ReplLogEntry = {
+  block: string
+  outcome: 'hit' | 'miss'
+  placedSlot: number
+  evictedBlock: string | null
+}
+
+type ReplState = {
+  slots: (string | null)[]
+  recencyOrder: number[] // slot indices, oldest-touched → newest-touched (LRU/MRU)
+  insertOrder: number[]  // slot indices, oldest-inserted → newest-inserted (FIFO)
+}
+
+const emptyReplState = (): ReplState => ({
+  slots: Array.from({ length: REPL_SLOTS }, () => null),
+  recencyOrder: [],
+  insertOrder: [],
+})
+
+const REPL_ALGO_META: Record<ReplacementAlgo, { label: string; color: 'emerald' | 'amber' | 'cyan' | 'violet' }> = {
+  lru: { label: 'LRU', color: 'emerald' },
+  mru: { label: 'MRU', color: 'amber' },
+  fifo: { label: 'FIFO', color: 'cyan' },
+  random: { label: 'Random', color: 'violet' },
+}
+
+function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; onAlgoChange: (a: ReplacementAlgo) => void }) {
+  const [state, setState] = useState<ReplState>(emptyReplState)
+  const [log, setLog] = useState<ReplLogEntry[]>([])
+  const [flash, setFlash] = useState<{ slot: number; kind: 'hit' | 'placed' | 'evicted' } | null>(null)
+  const [hits, setHits] = useState(0)
+  const [misses, setMisses] = useState(0)
+
+  const touch = (arr: number[], slot: number) => [...arr.filter(s => s !== slot), slot]
+
+  const access = (block: string, algoUsed: ReplacementAlgo) => {
+    setState(prev => {
+      const hitSlot = prev.slots.indexOf(block)
+
+      if (hitSlot !== -1) {
+        setFlash({ slot: hitSlot, kind: 'hit' })
+        setHits(h => h + 1)
+        setLog(l => [{ block, outcome: 'hit' as const, placedSlot: hitSlot, evictedBlock: null }, ...l].slice(0, 6))
+        return { ...prev, recencyOrder: touch(prev.recencyOrder, hitSlot) }
+      }
+
+      const emptySlot = prev.slots.indexOf(null)
+      let target: number
+      let evictedBlock: string | null = null
+
+      if (emptySlot !== -1) {
+        target = emptySlot
+      } else {
+        const occupied = prev.slots.map((_, i) => i)
+        if (algoUsed === 'lru') {
+          target = prev.recencyOrder.find(s => occupied.includes(s)) ?? occupied[0]
+        } else if (algoUsed === 'mru') {
+          target = [...prev.recencyOrder].reverse().find(s => occupied.includes(s)) ?? occupied[0]
+        } else if (algoUsed === 'fifo') {
+          target = prev.insertOrder.find(s => occupied.includes(s)) ?? occupied[0]
+        } else {
+          target = occupied[Math.floor(Math.random() * occupied.length)]
+        }
+        evictedBlock = prev.slots[target]
+      }
+
+      const nextSlots = prev.slots.map((b, i) => (i === target ? block : b))
+      setFlash({ slot: target, kind: evictedBlock !== null ? 'evicted' : 'placed' })
+      setMisses(m => m + 1)
+      setLog(l => [{ block, outcome: 'miss' as const, placedSlot: target, evictedBlock }, ...l].slice(0, 6))
+      return {
+        slots: nextSlots,
+        recencyOrder: touch(prev.recencyOrder, target),
+        insertOrder: touch(prev.insertOrder, target),
+      }
+    })
+    setTimeout(() => setFlash(null), 900)
+  }
+
+  const runPreset = (sequence: string[]) => {
+    setState(emptyReplState())
+    setLog([])
+    setHits(0)
+    setMisses(0)
+    sequence.forEach((b, i) => setTimeout(() => access(b, algo), i * 950))
+  }
+
+  const reset = () => {
+    setState(emptyReplState())
+    setLog([])
+    setFlash(null)
+    setHits(0)
+    setMisses(0)
+  }
+
+  const meta = REPL_ALGO_META[algo]
+  const algoColorClasses: Record<'emerald' | 'amber' | 'cyan' | 'violet', string> = {
+    emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
+    amber: 'bg-amber-500/20 text-amber-400 border-amber-500/50',
+    cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
+    violet: 'bg-violet-500/20 text-violet-400 border-violet-500/50',
+  }
+
+  const totalOps = hits + misses
+  const hitRate = totalOps > 0 ? ((hits / totalOps) * 100).toFixed(0) : '—'
+
+  const recencyBlocks = state.recencyOrder.map(s => state.slots[s]).filter(Boolean) as string[]
+  const insertBlocks = state.insertOrder.map(s => state.slots[s]).filter(Boolean) as string[]
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      {/* Algorithm selector */}
+      <div className="flex gap-1.5">
+        {(['lru', 'mru', 'fifo', 'random'] as const).map(a => (
+          <button
+            key={a}
+            onClick={() => onAlgoChange(a)}
+            className={['flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all',
+              algo === a ? algoColorClasses[REPL_ALGO_META[a].color] : 'bg-slate-900 text-slate-500 border-slate-700 hover:text-slate-300'
+            ].join(' ')}
+          >
+            {REPL_ALGO_META[a].label}
+          </button>
+        ))}
+      </div>
+
+      {/* Cache slots visualization */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">Cache ({REPL_SLOTS} slots)</div>
+          <div className="text-[9px] font-mono font-bold px-2 py-0.5 rounded text-slate-400 bg-slate-900">
+            {hits}H / {misses}M {totalOps > 0 ? `· ${hitRate}%` : ''}
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {state.slots.map((b, i) => {
+            const f = flash?.slot === i ? flash : null
+            let cls = 'bg-slate-900 border-slate-800 text-slate-600'
+            if (f?.kind === 'hit') cls = 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 scale-105'
+            else if (f?.kind === 'evicted') cls = 'bg-rose-500/20 border-rose-500/60 text-rose-300 scale-105'
+            else if (f?.kind === 'placed') cls = 'bg-cyan-500/20 border-cyan-500/60 text-cyan-300 scale-105'
+            else if (b !== null) cls = 'bg-slate-800 border-slate-700 text-slate-200'
+            return (
+              <div key={i} className={['rounded-lg border p-3 text-center font-mono transition-all duration-300', cls].join(' ')}>
+                <div className="text-[8px] text-slate-500 mb-1">Slot {i}</div>
+                <div className="text-lg font-bold">{b ?? '—'}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Order tracking — makes the algorithm's memory visible */}
+      {algo !== 'random' ? (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[10px]">
+          <div className="text-slate-500 uppercase tracking-wider mb-1.5">
+            {algo === 'fifo' ? 'Insertion order (oldest → newest)' : 'Recency order (least → most recently used)'}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {(algo === 'fifo' ? insertBlocks : recencyBlocks).length === 0
+              ? <span className="text-slate-600">— empty —</span>
+              : (algo === 'fifo' ? insertBlocks : recencyBlocks).map((b, i, arr) => (
+                <span key={i} className="flex items-center gap-1.5">
+                  <span className={['px-1.5 py-0.5 rounded border',
+                    i === 0 ? 'border-rose-500/50 text-rose-300 bg-rose-500/10' : 'border-slate-700 text-slate-300'
+                  ].join(' ')}>{b}</span>
+                  {i < arr.length - 1 && <span className="text-slate-700">→</span>}
+                </span>
+              ))
+            }
+          </div>
+          <div className="text-slate-600 text-[9px] mt-1.5">
+            Red-outlined block is the next eviction victim under {meta.label}.
+          </div>
+        </div>
+      ) : (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[10px] text-slate-500">
+          No order is tracked under Random — the victim is chosen with a fresh coin-flip among occupied slots every time.
+        </div>
+      )}
+
+      {/* Manual access */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {REPL_BLOCKS.map(b => (
+          <button
+            key={b}
+            onClick={() => access(b, algo)}
+            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs hover:border-slate-600 hover:text-white transition-all"
+          >
+            {b}
+          </button>
+        ))}
+      </div>
+
+      {/* Presets + reset */}
+      <div className="flex gap-2">
+        <button onClick={() => runPreset(['A', 'B', 'C', 'D', 'E', 'D', 'F'])}
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          Fill Demo (A→B→C→D→E→D→F)
+        </button>
+        <button onClick={() => runPreset(['A', 'B', 'C', 'D', 'E', 'A', 'B'])}
+          className="flex-1 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40 text-[10px] font-bold uppercase tracking-wide text-rose-300 hover:bg-rose-500/20 transition-all">
+          Cyclic Demo (A→B→C→D→E→A→B)
+        </button>
+        <button onClick={reset}
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          Reset
+        </button>
+      </div>
+
+      {/* Access log */}
+      {log.length > 0 && (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[10px] space-y-1">
+          <div className="text-slate-500 uppercase tracking-wider mb-1">Access Log</div>
+          {log.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2 text-slate-400">
+              <span className="text-slate-600">{i === 0 ? 'now' : `-${i}`}</span>
+              <span className="text-slate-200 font-bold">block {entry.block}</span>
+              <span className={entry.outcome === 'hit' ? 'text-emerald-400' : 'text-amber-400'}>
+                {entry.outcome === 'hit' ? 'HIT' : 'MISS'}
+              </span>
+              <span className="text-slate-600">→ slot {entry.placedSlot}</span>
+              {entry.evictedBlock !== null && <span className="text-rose-400">evicted block {entry.evictedBlock}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── WRITE POLICY SIMULATOR ────────────────────────────────────────────────
+// Self-contained: a 4-slot cache (FIFO victim selection, kept simple since
+// replacement strategy isn't this tab's point) that visualizes CPU → Cache →
+// RAM data flow on writes, toggling Write-Through/Write-Back and
+// Write-Allocate/No-Write-Allocate so the dirty bit and RAM-sync timing
+// become visible instead of just described.
+
+const WP_SLOTS = 4
+const WP_BLOCKS = ['A', 'B', 'C', 'D', 'E']
+
+type WritePolicy = 'writethrough' | 'writeback'
+type MissPolicy = 'allocate' | 'noallocate'
+
+type WPSlot = { block: string | null; dirty: boolean }
+type WPState = { slots: WPSlot[]; insertOrder: number[] }
+
+const emptyWPState = (): WPState => ({
+  slots: Array.from({ length: WP_SLOTS }, () => ({ block: null, dirty: false })),
+  insertOrder: [],
+})
+
+type WPLogEntry = {
+  block: string
+  kind: 'hit' | 'allocate' | 'bypass'
+  policy: WritePolicy
+  dirty: boolean
+  flushedBlock: string | null
+}
+
+type WPFlow = { cache: number | null; ram: boolean; flush: boolean; kind: 'hit' | 'allocate' | 'bypass' } | null
+
+function WritePolicySimulator() {
+  const [policy, setPolicy] = useState<WritePolicy>('writeback')
+  const [missPolicy, setMissPolicy] = useState<MissPolicy>('allocate')
+  const [state, setState] = useState<WPState>(emptyWPState)
+  const [log, setLog] = useState<WPLogEntry[]>([])
+  const [flow, setFlow] = useState<WPFlow>(null)
+
+  const write = (block: string, wp: WritePolicy, mp: MissPolicy) => {
+    setState(prev => {
+      const hitSlot = prev.slots.findIndex(s => s.block === block)
+
+      if (hitSlot !== -1) {
+        const dirty = wp === 'writeback'
+        const nextSlots = prev.slots.map((s, i) => (i === hitSlot ? { block, dirty } : s))
+        setFlow({ cache: hitSlot, ram: wp === 'writethrough', flush: false, kind: 'hit' })
+        setLog(l => [{ block, kind: 'hit' as const, policy: wp, dirty, flushedBlock: null }, ...l].slice(0, 6))
+        return { ...prev, slots: nextSlots }
+      }
+
+      if (mp === 'noallocate') {
+        setFlow({ cache: null, ram: true, flush: false, kind: 'bypass' })
+        setLog(l => [{ block, kind: 'bypass' as const, policy: wp, dirty: false, flushedBlock: null }, ...l].slice(0, 6))
+        return prev
+      }
+
+      const emptySlot = prev.slots.findIndex(s => s.block === null)
+      let target: number
+      let flushedBlock: string | null = null
+
+      if (emptySlot !== -1) {
+        target = emptySlot
+      } else {
+        target = prev.insertOrder[0]
+        const victim = prev.slots[target]
+        if (victim.dirty) flushedBlock = victim.block
+      }
+
+      const dirty = wp === 'writeback'
+      const nextSlots = prev.slots.map((s, i) => (i === target ? { block, dirty } : s))
+      const nextInsertOrder = [...prev.insertOrder.filter(s => s !== target), target]
+      setFlow({ cache: target, ram: wp === 'writethrough' || flushedBlock !== null, flush: flushedBlock !== null, kind: 'allocate' })
+      setLog(l => [{ block, kind: 'allocate' as const, policy: wp, dirty, flushedBlock }, ...l].slice(0, 6))
+      return { slots: nextSlots, insertOrder: nextInsertOrder }
+    })
+    setTimeout(() => setFlow(null), 1100)
+  }
+
+  const runPreset = (name: 'consolidate' | 'flush') => {
+    setState(emptyWPState())
+    setLog([])
+    if (name === 'consolidate') {
+      setPolicy('writeback')
+      setMissPolicy('allocate')
+      ;['A', 'A', 'A'].forEach((b, i) => setTimeout(() => write(b, 'writeback', 'allocate'), i * 1150))
+    } else {
+      setPolicy('writeback')
+      setMissPolicy('allocate')
+      ;['A', 'B', 'C', 'D', 'E'].forEach((b, i) => setTimeout(() => write(b, 'writeback', 'allocate'), i * 1150))
+    }
+  }
+
+  const reset = () => {
+    setState(emptyWPState())
+    setLog([])
+    setFlow(null)
+  }
+
+  const dirtyCount = state.slots.filter(s => s.dirty).length
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      {/* Policy toggles */}
+      <div className="flex gap-2">
+        <div className="flex-1 flex gap-1.5">
+          {(['writethrough', 'writeback'] as const).map(p => (
+            <button
+              key={p}
+              onClick={() => setPolicy(p)}
+              className={['flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all',
+                policy === p ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-slate-900 text-slate-500 border-slate-700 hover:text-slate-300'
+              ].join(' ')}
+            >
+              {p === 'writethrough' ? 'Write-Through' : 'Write-Back'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        {(['allocate', 'noallocate'] as const).map(m => (
+          <button
+            key={m}
+            onClick={() => setMissPolicy(m)}
+            className={['flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide border transition-all',
+              missPolicy === m ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' : 'bg-slate-900 text-slate-500 border-slate-700 hover:text-slate-300'
+            ].join(' ')}
+          >
+            {m === 'allocate' ? 'Write-Allocate' : 'No-Write-Allocate'}
+          </button>
+        ))}
+      </div>
+
+      {/* CPU → Cache → RAM flow diagram */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
+            flow ? 'border-white/40 bg-white/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400'
+          ].join(' ')}>
+            <div className="text-[9px] font-mono uppercase tracking-wider">CPU</div>
+            <div className="text-[8px] text-slate-500">writes {flow ? log[0]?.block ?? '' : ''}</div>
+          </div>
+          <div className={['text-slate-600 transition-all', flow ? 'text-cyan-400' : ''].join(' ')}>→</div>
+          <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
+            flow?.kind === 'bypass' ? 'border-slate-800 bg-slate-900 text-slate-600 opacity-40' :
+            flow?.cache !== null && flow?.cache !== undefined ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300' :
+            'border-slate-800 bg-slate-900 text-slate-400'
+          ].join(' ')}>
+            <div className="text-[9px] font-mono uppercase tracking-wider">Cache</div>
+            <div className="text-[8px] text-slate-500">{dirtyCount} dirty line{dirtyCount === 1 ? '' : 's'}</div>
+          </div>
+          <div className={['transition-all', flow?.ram ? 'text-rose-400' : 'text-slate-600'].join(' ')}>→</div>
+          <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
+            flow?.ram ? (flow.flush ? 'border-rose-500/60 bg-rose-500/10 text-rose-300' : 'border-emerald-500/60 bg-emerald-500/10 text-emerald-300') : 'border-slate-800 bg-slate-900 text-slate-400'
+          ].join(' ')}>
+            <div className="text-[9px] font-mono uppercase tracking-wider">Main Memory</div>
+            <div className="text-[8px] text-slate-500">{flow?.ram ? (flow.flush ? 'dirty flush' : 'synced now') : 'idle'}</div>
+          </div>
+        </div>
+
+        {/* Cache slots */}
+        <div className="grid grid-cols-4 gap-2">
+          {state.slots.map((s, i) => {
+            const isFlowSlot = flow?.cache === i
+            let cls = 'bg-slate-900 border-slate-800 text-slate-600'
+            if (isFlowSlot && flow?.flush) cls = 'bg-rose-500/20 border-rose-500/60 text-rose-300 scale-105'
+            else if (isFlowSlot) cls = 'bg-cyan-500/20 border-cyan-500/60 text-cyan-300 scale-105'
+            else if (s.block !== null) cls = 'bg-slate-800 border-slate-700 text-slate-200'
+            return (
+              <div key={i} className={['rounded-lg border p-2 text-center font-mono transition-all duration-300', cls].join(' ')}>
+                <div className="text-[8px] text-slate-500 mb-0.5">Slot {i}</div>
+                <div className="text-sm font-bold">{s.block ?? '—'}</div>
+                <div className={['text-[8px] font-bold mt-0.5', s.dirty ? 'text-amber-400' : 'text-slate-700'].join(' ')}>
+                  {s.dirty ? 'D' : '·'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Manual writes */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {WP_BLOCKS.map(b => (
+          <button
+            key={b}
+            onClick={() => write(b, policy, missPolicy)}
+            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs hover:border-slate-600 hover:text-white transition-all"
+          >
+            {b}
+          </button>
+        ))}
+        <span className="text-[9px] text-slate-600 font-mono ml-1">click to write</span>
+      </div>
+
+      {/* Presets + reset */}
+      <div className="flex gap-2">
+        <button onClick={() => runPreset('consolidate')}
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          Consolidation Demo (write A×3)
+        </button>
+        <button onClick={() => runPreset('flush')}
+          className="flex-1 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40 text-[10px] font-bold uppercase tracking-wide text-rose-300 hover:bg-rose-500/20 transition-all">
+          Dirty Eviction Flush (A→E)
+        </button>
+        <button onClick={reset}
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          Reset
+        </button>
+      </div>
+
+      {/* Log */}
+      {log.length > 0 && (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[10px] space-y-1">
+          <div className="text-slate-500 uppercase tracking-wider mb-1">Write Log</div>
+          {log.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2 text-slate-400 flex-wrap">
+              <span className="text-slate-600">{i === 0 ? 'now' : `-${i}`}</span>
+              <span className="text-slate-200 font-bold">write {entry.block}</span>
+              <span className={
+                entry.kind === 'hit' ? 'text-emerald-400' : entry.kind === 'bypass' ? 'text-slate-400' : 'text-amber-400'
+              }>
+                {entry.kind === 'hit' ? 'CACHE HIT' : entry.kind === 'bypass' ? 'RAM BYPASS' : 'MISS→ALLOCATE'}
+              </span>
+              {entry.kind !== 'bypass' && (
+                <span className={entry.dirty ? 'text-amber-400' : 'text-emerald-400'}>
+                  {entry.dirty ? 'marked dirty' : 'synced to RAM'}
+                </span>
+              )}
+              {entry.flushedBlock !== null && <span className="text-rose-400">flushed dirty block {entry.flushedBlock}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
