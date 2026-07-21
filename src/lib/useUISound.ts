@@ -184,5 +184,111 @@ export function useUISound() {
     thudOsc.stop(ctx.currentTime + 0.5)
   }, [])
 
-  return { playHover, playHit, playMiss, playGlitch, playOptimize }
+  
+  const playComboHit = useCallback((combo: number) => {
+    if (!audioCtxRef.current) return
+    const ctx = audioCtxRef.current
+    if (ctx.state === 'suspended') return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    
+    // C Major Pentatonic Scale
+    const baseFreq = 523.25; // C5
+    const intervals = [1, 1.122, 1.259, 1.498, 1.681]; 
+    const intervalIndex = (combo - 1) % intervals.length;
+    const octave = Math.floor((combo - 1) / intervals.length) + 1;
+    const freq = baseFreq * intervals[intervalIndex] * octave;
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(freq, ctx.currentTime)
+    osc.frequency.setValueAtTime(freq * 1.5, ctx.currentTime + 0.1)
+
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start()
+    osc.stop(ctx.currentTime + 0.5)
+  }, [])
+
+  const playComboBreak = useCallback(() => {
+    if (!audioCtxRef.current) return
+    const ctx = audioCtxRef.current
+    if (ctx.state === 'suspended') return
+
+    const osc = ctx.createOscillator()
+    const osc2 = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sawtooth'
+    osc2.type = 'square'
+    
+    osc.frequency.setValueAtTime(800, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.4)
+    
+    osc2.frequency.setValueAtTime(1200, ctx.currentTime)
+    osc2.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.3)
+
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.01)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+
+    osc.connect(gain)
+    osc2.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start()
+    osc2.start()
+    osc.stop(ctx.currentTime + 0.4)
+    osc2.stop(ctx.currentTime + 0.4)
+  }, [])
+
+  const flowSynthRef = useRef<{ osc: OscillatorNode, gain: GainNode } | null>(null)
+
+  const startFlowStateSynth = useCallback(() => {
+    if (!audioCtxRef.current || flowSynthRef.current) return
+    const ctx = audioCtxRef.current
+    if (ctx.state === 'suspended') return
+
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    const filter = ctx.createBiquadFilter()
+
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(65.41, ctx.currentTime) // C2
+
+    filter.type = 'lowpass'
+    filter.frequency.setValueAtTime(400, ctx.currentTime)
+    filter.Q.value = 1
+
+    gain.gain.setValueAtTime(0, ctx.currentTime)
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 2) // Slow fade in
+
+    osc.connect(filter)
+    filter.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start()
+    flowSynthRef.current = { osc, gain }
+  }, [])
+
+  const stopFlowStateSynth = useCallback(() => {
+    if (!audioCtxRef.current || !flowSynthRef.current) return
+    const ctx = audioCtxRef.current
+    const { osc, gain } = flowSynthRef.current
+
+    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 1.5) // Slow fade out
+    osc.stop(ctx.currentTime + 1.5)
+    
+    flowSynthRef.current = null
+  }, [])
+
+  return { 
+    playHover, playHit, playMiss, playGlitch, playOptimize,
+    playComboHit, playComboBreak, startFlowStateSynth, stopFlowStateSynth
+  }
 }

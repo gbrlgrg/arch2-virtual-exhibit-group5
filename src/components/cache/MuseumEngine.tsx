@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useEffect } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { SimulatorControls } from './simulator-controls'
 import { Visualizer, type SimState } from './visualizer'
 import {
@@ -12,6 +12,12 @@ import {
   MemoryStick, ChevronRight, Zap, GraduationCap, Cpu, Layers,
   BookOpen, FlaskConical, BarChart3
 } from 'lucide-react'
+import { useUISound } from '../../lib/useUISound'
+import { useHackerMode, toHexDump } from '../../lib/useHackerMode'
+import { useMiniGames } from '../../lib/useMiniGames'
+import { OverclockSurge, ThrashingNightmare, TrolleyMiniGame, PowerOutageMiniGame, ControllerExamMiniGame } from './MiniGames'
+import { NumberRoller } from './NumberRoller'
+import { GlobalTelemetryConsole, LiveBandwidthMonitor } from './Telemetry'
 
 type ForceMode = 'auto' | 'hit' | 'miss'
 type ReplacementAlgo = 'lru' | 'mru' | 'fifo' | 'random'
@@ -67,6 +73,13 @@ export default function MuseumEngine() {
   const [cache, setCache] = useState<CacheRow[]>(() => createEmptyCache())
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('architecture')
+  const [speedMultiplier, setSpeedMultiplier] = useState(1)
+  const [consecutiveHits, setConsecutiveHits] = useState(0)
+  const [optimizationCount, setOptimizationCount] = useState(0)
+  const { playHit, playMiss, playGlitch, playOptimize, playComboHit, playComboBreak, startFlowStateSynth, stopFlowStateSynth } = useUISound()
+  const { hackerMode, isGlitching, toggleHackerMode } = useHackerMode(playGlitch)
+  const [accessHistory, setAccessHistory] = useState<{tag: number, index: number}[]>([])
+  const [isThrashing, setIsThrashing] = useState(false)
 
   // Running scoreboard
   const [hits, setHits] = useState(0)
@@ -79,23 +92,19 @@ export default function MuseumEngine() {
   // Flash state
   const [triggered, setTriggered] = useState(false)
 
-  // ─── GAMIFICATION STATE ──────────────────────────────────────────────────
+  
   const [xp, setXp] = useState(0)
   const [timeSaved, setTimeSaved] = useState(0)
   const [isLevelingUp, setIsLevelingUp] = useState(false)
   const [isShaking, setIsShaking] = useState(false)
-  const [isOverclocking, setIsOverclocking] = useState(false)
-  const [thrashState, setThrashState] = useState<'A'|'B'>('A')
-  const [thrashCount, setThrashCount] = useState(0)
-  const [trolleyState, setTrolleyState] = useState<'idle'|'prompt'|'success'|'fail'>('idle')
-  const [powerState, setPowerState] = useState<'idle'|'writing'|'blackout'|'lost'>('idle')
-  const [examState, setExamState] = useState<'idle'|'running'|'success'|'fail'>('idle')
-  const [examTime, setExamTime] = useState(5)
-  const [hackerMode, setHackerMode] = useState(false)
-  const [isGlitching, setIsGlitching] = useState(false)
-  const [optimizationCount, setOptimizationCount] = useState(0)
 
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const defragmentCache = () => {
+    setOptimizationCount(c => c + 1)
+    setXp(x => x + 10)
+    playOptimize()
+  }
+
+const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const simulatorRef = useRef<HTMLDivElement>(null)
 
   const handleFetch = useCallback(
@@ -113,94 +122,86 @@ export default function MuseumEngine() {
       // Let the breakdown animation finish (2000ms) before starting the visualizer
       const tCalc = setTimeout(() => {
         setSimState('calculating')
-      }, 2000)
+      }, 2000 / speedMultiplier)
 
       const tResult = setTimeout(() => {
         setCache((currentCache) => {
           const result = lookup(currentCache, parsed, effectiveForce)
           setLatency(result.latency)
           setSimState(result.outcome)
-          if (result.outcome === 'hit') setHits(h => h + 1)
-          else if (result.outcome === 'miss') setMisses(m => m + 1)
+          if (result.outcome === 'hit') {
+            const nextCombo = consecutiveHits + 1;
+            if (nextCombo > 1) playComboHit(nextCombo);
+            else playHit();
+            
+            if (nextCombo === 5) startFlowStateSynth();
+            
+            setHits(h => h + 1)
+            setConsecutiveHits(nextCombo)
+          } else if (result.outcome === 'miss') {
+            if (consecutiveHits >= 3) {
+              playComboBreak();
+              stopFlowStateSynth();
+            } else {
+              playMiss();
+            }
+            
+            setMisses(m => m + 1)
+            setConsecutiveHits(0)
+          }
+          
+          setAccessHistory(prev => {
+            const newHist = [...prev, { tag: parsed.tag, index: parsed.index }].slice(-4);
+            if (newHist.length === 4) {
+              const allSameIndex = newHist.every(h => h.index === newHist[0].index);
+              const tagsAlternate = newHist[0].tag === newHist[2].tag && newHist[1].tag === newHist[3].tag && newHist[0].tag !== newHist[1].tag;
+              if (allSameIndex && tagsAlternate) {
+                setIsThrashing(true);
+                playGlitch();
+                setTimeout(() => setIsThrashing(false), 3000 / speedMultiplier);
+              }
+            }
+            return newHist;
+          });
+
           return result.cache
         })
-      }, 3200)
+      }, 3200 / speedMultiplier)
       timersRef.current.push(tCalc, tResult)
     },
-    [forceMode],
+    [forceMode, speedMultiplier],
   )
 
   const triggerSimulation = (address: string, fm?: ForceMode) => {
     setTriggered(true)
-    setTimeout(() => setTriggered(false), 1800)
+    setTimeout(() => setTriggered(false), 1800 / speedMultiplier)
     if (fm) setForceMode(fm)
 
     // Scroll to the simulator panel
     simulatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-    setTimeout(() => { handleFetch(address, fm) }, 300)
-  }
-
-  // ─── GAMIFICATION HANDLERS ─────────────────────────────────────────────────
-  const handleOverclock = () => {
-    if (isOverclocking) return
-    setIsOverclocking(true)
-    let count = 0
-    const interval = setInterval(() => {
-      const isHit = Math.random() > 0.35
-      if (isHit) {
-        setHits(h => h + 1)
-        setXp(x => x + 5)
-      } else {
-        setMisses(m => m + 1)
-        setIsShaking(true)
-        setTimeout(() => setIsShaking(false), 50)
-      }
-      setSimState(isHit ? 'hit' : 'miss')
-      count++
-      if (count >= 40) {
-        clearInterval(interval)
-        setIsOverclocking(false)
-        setSimState('idle')
-      }
-    }, 60)
-  }
-
-  const startExam = () => {
-    setExamState('running')
-    setExamTime(5)
-    if ((window as any).examTimer) clearInterval((window as any).examTimer)
-    ;(window as any).examTimer = setInterval(() => {
-      setExamTime(t => {
-        if (t <= 1) {
-          clearInterval((window as any).examTimer)
-          setExamState('fail')
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
-  }
-
-  const answerExam = (correct: boolean) => {
-    if ((window as any).examTimer) clearInterval((window as any).examTimer)
-    if (correct) {
-      setExamState('success')
-      setXp(x => x + 50)
-    } else {
-      setExamState('fail')
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 300)
-    }
-  }
-
-  const defragmentCache = () => {
-    setOptimizationCount(c => c + 1)
-    setXp(x => x + 10)
+    setTimeout(() => { handleFetch(address, fm) }, 300 / speedMultiplier)
   }
 
   const totalOps = hits + misses
   const hitRate = totalOps > 0 ? ((hits / totalOps) * 100).toFixed(1) : '—'
+
+  
+  const hitRateNum = totalOps > 0 ? (hits / totalOps) * 100 : null;
+
+  let ambientClasses = "bg-slate-950/40 shadow-[0_0_50px_rgba(34,211,238,0.15)] border-slate-700/50";
+  if (isGlitching) {
+    ambientClasses = "glitch-overlay";
+  } else if (hackerMode) {
+    ambientClasses = "hacker-crt";
+  } else if (consecutiveHits >= 5) {
+    ambientClasses = "bg-blue-950/80 shadow-[inset_0_0_150px_rgba(37,99,235,0.4)] border-blue-400 border-2 scale-[1.01] transition-all duration-300";
+  } else if (speedMultiplier < 1) {
+    ambientClasses = "bg-blue-950/60 shadow-[inset_0_0_100px_rgba(59,130,246,0.3)] border-blue-500/50";
+  } else if (hitRateNum !== null) {
+    if (hitRateNum >= 80) ambientClasses = "bg-cyan-950/40 shadow-[inset_0_0_100px_rgba(34,211,238,0.2)] border-cyan-500/50";
+    else if (hitRateNum <= 30) ambientClasses = "bg-rose-950/40 shadow-[inset_0_0_100px_rgba(244,63,94,0.2)] border-rose-500/50";
+  }
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode; color: 'indigo'|'cyan'|'emerald'|'amber'|'violet' }[] = [
     { id: 'architecture', label: '1. Architecture',       icon: <Cpu className="size-4" />,        color: 'indigo'  },
@@ -227,8 +228,21 @@ export default function MuseumEngine() {
     canon:         'Live Telemetry',
   }
 
+  const miniGames = useMiniGames({
+    setHits, 
+    setMisses, 
+    playHit, 
+    playMiss, 
+    setIsShaking, 
+    setSimState, 
+    setXp, 
+    triggerSimulation
+  })
+
   return (
-    <div className={['flex flex-col lg:flex-row w-full min-h-[750px] bg-slate-950/40 backdrop-blur-3xl text-slate-100 rounded-2xl border border-slate-700/50 ring-1 ring-white/10 ring-inset overflow-hidden font-sans shadow-[0_0_50px_rgba(34,211,238,0.15)] my-6', isShaking ? 'animate-micro-screen-shake' : ''].join(' ')}>
+    <div className={`relative flex flex-col lg:flex-row w-full min-h-[750px] backdrop-blur-3xl text-slate-100 rounded-2xl border ring-1 ring-white/10 ring-inset overflow-hidden font-sans my-6 transition-all duration-1000  ${ambientClasses}`}>
+      {/* DOPAMINE MESH BACKGROUND */}
+      {!hackerMode && <div className="dopamine-mesh"></div>}
 
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* LEFT PANEL: EXHIBIT GUIDE                                  */}
@@ -236,7 +250,17 @@ export default function MuseumEngine() {
       <div className="w-full lg:w-[42%] flex flex-col border-b lg:border-b-0 lg:border-r border-slate-700/50 bg-slate-900/60 backdrop-blur-xl">
 
         {/* Header */}
-        <header className="px-5 py-5 border-b border-slate-800/60 shrink-0">
+        <header className="px-5 py-5 border-b border-slate-800/60 shrink-0 relative overflow-hidden">
+          {/* THE MATRIX / HACKER OVERRIDE TOGGLE */}
+          <div className="absolute top-2 right-2 z-50">
+            <button 
+              onClick={toggleHackerMode}
+              className={`px-3 py-1 font-mono text-[9px] uppercase font-bold border transition-all ${hackerMode ? 'bg-green-900/50 text-green-400 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-slate-900/50 text-slate-600 border-slate-800 hover:text-slate-400'}`}
+            >
+              [ OVERRIDE_MODE ]
+            </button>
+          </div>
+          
           <div className="text-cyan-400 font-mono text-[9px] font-semibold tracking-[0.25em] uppercase mb-1.5 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]"></span>
             CSARCH2 · Group 5 · Interactive Exhibit
@@ -891,29 +915,90 @@ export default function MuseumEngine() {
 
         {/* Scoreboard — only meaningful while the address-lookup simulator (architecture tab) is active */}
         {activeTab === 'architecture' && (
-          <div className="relative w-full flex items-center gap-3">
-            <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between">
-              <div>
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
-                <div className="text-2xl font-bold text-emerald-400">{hits}</div>
+          <div className="relative w-full flex flex-col items-center gap-3 z-10">
+            
+            {/* BULLET TIME / GOD MODE SLIDER */}
+            <div className="w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1">Time Dilation Engine</span>
+                <span className={speedMultiplier < 1 ? "text-blue-400 font-bold" : "text-slate-300 font-bold"}>
+                  {speedMultiplier === 1 ? 'REALTIME' : 'BULLET TIME (' + speedMultiplier + 'x)'}
+                </span>
               </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
-                <div className="text-2xl font-bold text-amber-400">{misses}</div>
+              <div className="flex-1 max-w-[200px] mx-4">
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1" 
+                  step="0.1" 
+                  value={speedMultiplier}
+                  onChange={(e) => setSpeedMultiplier(parseFloat(e.target.value))}
+                  className="w-full accent-blue-500 cursor-pointer"
+                />
               </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
-                <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
-                  {hitRate}{totalOps > 0 ? '%' : ''}
+              <button 
+                onClick={() => setSpeedMultiplier(speedMultiplier === 1 ? 0.1 : 1)}
+                className={`px-3 py-1 rounded text-xs font-mono font-bold uppercase transition-colors ${speedMultiplier < 1 ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+              >
+                {speedMultiplier === 1 ? 'GOD MODE' : 'RESET'}
+              </button>
+            </div>
+
+            <div className="w-full flex flex-col gap-3">
+              <div className="relative w-full flex items-center gap-3">
+                <div className={`flex-1 bg-slate-900/90 backdrop-blur-xl border ${consecutiveHits >= 3 ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'border-slate-800'} rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-300`}>
+                  <div>
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-2xl font-bold text-emerald-400"><NumberRoller value={hits} /></div>
+                      {consecutiveHits > 1 && (
+                        <div className="animate-pulse bg-blue-500/20 text-blue-400 border border-blue-500/50 px-2 py-0.5 rounded text-[10px] font-bold font-mono">
+                          x{consecutiveHits} COMBO
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
+                    <div className="text-2xl font-bold text-amber-400"><NumberRoller value={misses} /></div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
+                    <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
+                      {totalOps > 0 ? <NumberRoller value={parseFloat(hitRate)} isFloat /> : hitRate}{totalOps > 0 ? '%' : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 h-full">
+                  <button
+                    onClick={() => { playOptimize(); setOptimizationCount(c => c + 1); }}
+                    className="flex-1 shrink-0 px-3 py-1 bg-slate-900/90 backdrop-blur-xl border border-cyan-800/80 rounded-xl text-[10px] text-cyan-400 font-bold hover:bg-cyan-900/50 hover:text-cyan-300 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all font-mono uppercase"
+                  >
+                    Optimize
+                  </button>
+                  <button
+                    onClick={() => { setHits(0); setMisses(0); setConsecutiveHits(0); }}
+                    className="flex-1 shrink-0 px-3 py-1 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
+
+              {/* WASTED LIFETIMES DASHBOARD */}
+              {totalOps > 0 && (
+                <div className="w-full bg-slate-950/80 backdrop-blur-xl border border-slate-800/80 rounded-xl px-4 py-3 flex items-center justify-between text-xs font-mono shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                  <div className="flex flex-col">
+                    <span className="text-emerald-400 font-bold tracking-tight">Time Saved (Hits): {(hits * 98).toLocaleString()} ns</span>
+                    <span className="text-slate-500 text-[9px] italic mt-0.5">Saved CPU from staring at wall for {(hits * 98 * 11 / 365).toFixed(1)} years</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-rose-400 font-bold tracking-tight">Time Wasted (Misses): {(misses * 100).toLocaleString()} ns</span>
+                    <span className="text-slate-500 text-[9px] italic mt-0.5">CPU was agonizing for {(misses * 100 * 11 / 365).toFixed(1)} years</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => { setHits(0); setMisses(0) }}
-              className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
-            >
-              Reset
-            </button>
           </div>
         )}
 
@@ -961,238 +1046,42 @@ export default function MuseumEngine() {
                   activeIndex={activeIndex}
                   replacementAlgo={replacementAlgo}
                 />
+                <OverclockSurge isOverclocking={miniGames.isOverclocking} handleOverclock={miniGames.handleOverclock} />
               </>
             )}
 
-            {activeTab === 'mapping' && <MappingSimulator />}
+            {activeTab === 'mapping' && (
+              <>
+                <MappingSimulator />
+                <ThrashingNightmare thrashState={miniGames.thrashState} setThrashState={miniGames.setThrashState} thrashCount={miniGames.thrashCount} setThrashCount={miniGames.setThrashCount} triggerSimulation={triggerSimulation} />
+              </>
+            )}
 
             {activeTab === 'replacement' && (
-              <ReplacementSimulator algo={replacementAlgo} onAlgoChange={setReplacementAlgo} />
+              <>
+                <ReplacementSimulator algo={replacementAlgo} onAlgoChange={setReplacementAlgo} />
+                <TrolleyMiniGame trolleyState={miniGames.trolleyState} setTrolleyState={miniGames.setTrolleyState} />
+              </>
             )}
 
-            {activeTab === 'writepolicies' && <WritePolicySimulator />}
+            {activeTab === 'writepolicies' && (
+              <>
+                <WritePolicySimulator />
+                <PowerOutageMiniGame powerState={miniGames.powerState} setPowerState={miniGames.setPowerState} />
+              </>
+            )}
 
             {activeTab === 'canon' && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-                <div className="text-slate-500 text-[11px] font-mono">
-                  This tab is reference-only — no live simulator.
+              <>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
+                  <div className="text-slate-500 text-[11px] font-mono">
+                    This tab is reference-only — no live simulator.
+                  </div>
                 </div>
-              </div>
+                <ControllerExamMiniGame examState={miniGames.examState} setExamState={miniGames.setExamState} examTime={miniGames.examTime} startExam={miniGames.startExam} answerExam={miniGames.answerExam} />
+              </>
             )}
           </div>
-        </div>
-
-        {/* === RIGHT PANEL MINI-GAMES === */}
-        <div className="w-full shrink-0 relative z-20">
-
-          {/* OVERCLOCK CPU (architecture tab) */}
-          {activeTab === 'architecture' && (
-            <div className="mt-4 p-4 bg-rose-950/20 border border-rose-900/50 rounded-xl flex flex-col items-center justify-center relative overflow-hidden">
-              {isOverclocking && <div className="absolute inset-0 bg-rose-500/20 animate-pulse"></div>}
-              <div className="text-center z-10">
-                <div className="text-rose-400 font-bold text-xs uppercase tracking-[0.2em] mb-1">Warning: Thermal Overload</div>
-                <p className="text-slate-400 text-[10px] mb-3">Simulate a massive CPU spike. The cache must desperately try to serve requests at 100x speed.</p>
-                <button
-                  onClick={handleOverclock}
-                  disabled={isOverclocking}
-                  className={['px-6 py-2 rounded-md font-mono font-bold uppercase tracking-widest transition-all duration-75',
-                    isOverclocking ? 'bg-rose-600 text-white scale-95 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-rose-500/10 border border-rose-500 text-rose-400 hover:bg-rose-500 hover:text-white shadow-[0_0_15px_rgba(244,63,94,0.3)]'
-                  ].join(' ')}
-                >
-                  {isOverclocking ? 'OVERCLOCKING...' : '[ OVERCLOCK CPU ]'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ARCHITECTURE DASHBOARDS */}
-          {activeTab === 'architecture' && (
-            <>
-              <LiveBandwidthMonitor simState={simState} />
-              <GlobalTelemetryConsole
-                hits={hits} misses={misses} xp={xp} timeSaved={timeSaved}
-                totalOps={totalOps} hitRate={hitRate} isLevelingUp={isLevelingUp}
-                defragmentCache={defragmentCache}
-                reset={() => { setHits(0); setMisses(0); setXp(0); setTimeSaved(0) }}
-              />
-            </>
-          )}
-
-          {/* THE THRASHING TRAP (mapping tab) */}
-          {activeTab === 'mapping' && (
-            <div className="mt-4 p-4 bg-slate-950/80 border border-rose-900/50 rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_20px_rgba(244,63,94,0.1)]">
-              <div className="text-center z-10 w-full">
-                <div className="text-rose-400 font-bold text-xs uppercase tracking-[0.2em] mb-1">The Thrashing Trap</div>
-                <p className="text-slate-400 text-[10px] mb-3">CPU loop alternately asks for <span className="text-cyan-300">0x101</span> (Block A) and <span className="text-violet-300">0x501</span> (Block B). Both map to Slot 1.</p>
-                <div className="flex gap-2 justify-center mb-3">
-                  <button
-                    onClick={() => { triggerSimulation('0x101', 'miss'); setThrashState('B'); setThrashCount(c => c + 1) }}
-                    disabled={thrashState !== 'A'}
-                    className={['flex-1 px-4 py-2 rounded font-mono font-bold uppercase text-[10px] transition-all',
-                      thrashState === 'A' ? 'bg-cyan-500/20 border border-cyan-500 text-cyan-300 shadow-[0_0_10px_#22d3ee]' : 'bg-slate-900 border border-slate-800 text-slate-600'
-                    ].join(' ')}
-                  >
-                    Evict B → Load A
-                  </button>
-                  <button
-                    onClick={() => { triggerSimulation('0x501', 'miss'); setThrashState('A'); setThrashCount(c => c + 1) }}
-                    disabled={thrashState !== 'B'}
-                    className={['flex-1 px-4 py-2 rounded font-mono font-bold uppercase text-[10px] transition-all',
-                      thrashState === 'B' ? 'bg-violet-500/20 border border-violet-500 text-violet-300 shadow-[0_0_10px_#8b5cf6]' : 'bg-slate-900 border border-slate-800 text-slate-600'
-                    ].join(' ')}
-                  >
-                    Evict A → Load B
-                  </button>
-                </div>
-                {thrashCount > 0 && (
-                  <div className="text-[10px] font-mono text-rose-400 animate-pulse">
-                    Eviction cycle: {thrashCount}. Hit Rate: 0%.
-                    {thrashCount >= 6 && <span className="block mt-1 font-bold text-rose-500 text-xs">Frustrating, isn't it? This is Thrashing.</span>}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* THE AGONY OF CHOICE — TROLLEY PROBLEM (replacement tab) */}
-          {activeTab === 'replacement' && (
-            <div className="mt-4 p-4 bg-slate-950/80 border border-emerald-900/50 rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-              <div className="text-center z-10 w-full">
-                <div className="text-emerald-400 font-bold text-xs uppercase tracking-[0.2em] mb-1">The Agony of Choice</div>
-                {trolleyState === 'idle' && (
-                  <>
-                    <p className="text-slate-400 text-[10px] mb-3">CPU demands Block E. Cache is 100% full. Which resident block do you destroy?</p>
-                    <button
-                      onClick={() => setTrolleyState('prompt')}
-                      className="px-4 py-2 rounded bg-emerald-500/10 border border-emerald-500 text-emerald-400 font-mono text-[10px] uppercase font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                    >
-                      [ INITIALIZE EVICTION ]
-                    </button>
-                  </>
-                )}
-                {trolleyState === 'prompt' && (
-                  <>
-                    <div className="flex gap-2 justify-center mb-3 text-[10px] font-mono">
-                      <button onClick={() => setTrolleyState('fail')} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Evict A</button>
-                      <button onClick={() => setTrolleyState('success')} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-emerald-900 hover:text-emerald-300 transition-all rounded">Evict B</button>
-                      <button onClick={() => setTrolleyState('fail')} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Evict C</button>
-                      <button onClick={() => setTrolleyState('fail')} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Evict D</button>
-                    </div>
-                    <div className="text-[9px] text-amber-400 animate-pulse">Awaiting your command... Make the right choice.</div>
-                  </>
-                )}
-                {trolleyState === 'fail' && (
-                  <div className="text-center">
-                    <div className="text-rose-500 font-bold text-lg mb-1">FATAL MISS PENALTY</div>
-                    <p className="text-rose-300 text-[10px] mb-3">You evicted a block the CPU needed 3 cycles later. The pipeline stalled for 100ns.</p>
-                    <button onClick={() => setTrolleyState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Try Again</button>
-                  </div>
-                )}
-                {trolleyState === 'success' && (
-                  <div className="text-center">
-                    <div className="text-emerald-500 font-bold text-lg mb-1">EVICTION SUCCESS</div>
-                    <p className="text-emerald-300 text-[10px] mb-3">You evicted Block B, which wasn't needed again. The pipeline flows smoothly.</p>
-                    <button onClick={() => setTrolleyState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Reset</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* THE VOLATILITY THREAT — POWER OUTAGE (writepolicies tab) */}
-          {activeTab === 'writepolicies' && (
-            <div className="mt-4 p-4 bg-slate-950/80 border border-amber-900/50 rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.1)]">
-              {powerState === 'blackout' && <div className="absolute inset-0 bg-black z-20"></div>}
-              {powerState === 'lost' && <div className="absolute inset-0 bg-rose-950/20 z-0 mix-blend-color-dodge"></div>}
-              <div className="text-center z-10 w-full relative">
-                <div className="text-amber-400 font-bold text-xs uppercase tracking-[0.2em] mb-1">The Volatility Threat</div>
-                {powerState === 'idle' && (
-                  <>
-                    <p className="text-slate-400 text-[10px] mb-3">Simulate a Write-Back policy. Write critical data to cache without syncing to RAM.</p>
-                    <button
-                      onClick={() => {
-                        setPowerState('writing')
-                        setTimeout(() => setPowerState('blackout'), 1500)
-                        setTimeout(() => setPowerState('lost'), 2200)
-                      }}
-                      className="px-4 py-2 rounded bg-amber-500/10 border border-amber-500 text-amber-400 font-mono text-[10px] uppercase font-bold hover:bg-amber-500 hover:text-white transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-                    >
-                      [ WRITE CRITICAL DATA ]
-                    </button>
-                  </>
-                )}
-                {powerState === 'writing' && (
-                  <div className="text-cyan-400 font-mono text-[10px] animate-pulse">
-                    Writing to Cache... <br/>
-                    Dirty Bit: 1 <br/>
-                    Sync to RAM: Pending...
-                  </div>
-                )}
-                {powerState === 'lost' && (
-                  <div className="text-center">
-                    <div className="text-rose-500 font-bold text-lg mb-1">POWER OUTAGE</div>
-                    <p className="text-rose-400 text-[10px] font-mono break-words mb-3">
-                      DATA CORRUPTION: 0xDEADBEEF 0x{Math.floor(Math.random()*65535).toString(16).toUpperCase()} 0x{Math.floor(Math.random()*65535).toString(16).toUpperCase()}
-                    </p>
-                    <p className="text-rose-300 text-[10px] mb-3">All unsynced "Dirty" blocks were permanently lost.</p>
-                    <button onClick={() => setPowerState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Reboot System</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* THE CACHE CONTROLLER EXAM (canon tab) */}
-          {activeTab === 'canon' && (
-            <div className="mt-4 p-4 bg-slate-950/80 border border-violet-900/50 rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_20px_rgba(139,92,246,0.1)]">
-              <div className="text-center z-10 w-full relative">
-                <div className="text-violet-400 font-bold text-xs uppercase tracking-[0.2em] mb-1">The Cache Controller Exam</div>
-                {examState === 'idle' && (
-                  <>
-                    <p className="text-slate-400 text-[10px] mb-3">Prove you have the instincts of a hardware controller. You have 5 seconds.</p>
-                    <button
-                      onClick={startExam}
-                      className="px-4 py-2 rounded bg-violet-500/10 border border-violet-500 text-violet-400 font-mono text-[10px] uppercase font-bold hover:bg-violet-500 hover:text-white transition-all shadow-[0_0_15px_rgba(139,92,246,0.3)]"
-                    >
-                      [ INITIALIZE TURING TEST ]
-                    </button>
-                  </>
-                )}
-                {examState === 'running' && (
-                  <div className="animate-pulse">
-                    <div className="text-[20px] font-mono text-rose-400 font-bold mb-2">{examTime}.00s</div>
-                    <p className="text-white text-[10px] mb-3">CPU wants Block 9. Cache is 4-Way Set Associative (Total 16 slots). Which Set does it check?</p>
-                    <div className="flex gap-2 justify-center text-[10px] font-mono">
-                      <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 0</button>
-                      <button onClick={() => answerExam(true)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-emerald-900 hover:text-emerald-300 transition-all rounded">Set 1</button>
-                      <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 2</button>
-                      <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 9</button>
-                    </div>
-                  </div>
-                )}
-                {examState === 'fail' && (
-                  <div className="text-center">
-                    <div className="text-rose-500 font-bold text-lg mb-1">SYSTEM FAILURE</div>
-                    <p className="text-rose-300 text-[10px] mb-3">Incorrect or out of time. A 4-Way cache with 16 slots has 4 Sets. Block 9 mod 4 = Set 1.</p>
-                    <button onClick={() => setExamState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Retake Exam</button>
-                  </div>
-                )}
-                {examState === 'success' && (
-                  <div className="text-center">
-                    <div className="text-emerald-500 font-bold text-lg mb-1">CERTIFIED CONTROLLER</div>
-                    <p className="text-emerald-300 text-[10px] mb-3">Perfect execution under pressure. 9 mod 4 = Set 1. +50 XP Awarded.</p>
-                    <button onClick={() => setExamState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Reset</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* CANON DASHBOARD */}
-          {activeTab === 'canon' && (
-            <GrandAnalyticsTerminal hits={hits} misses={misses} xp={xp} timeSaved={timeSaved} />
-          )}
-
         </div>
       </div>
 
@@ -1282,183 +1171,6 @@ function TabButton({ id, label, icon, active, onClick, color }: {
   )
 }
 
-// ─── LIVE BANDWIDTH MONITOR ────────────────────────────────────────────────
-function LiveBandwidthMonitor({ simState }: { simState: SimState }) {
-  const [history, setHistory] = useState<number[]>(Array(30).fill(5))
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHistory(prev => {
-        const next = [...prev.slice(1)]
-        if (simState === 'hit') {
-          next.push(Math.random() * 15 + 15)
-        } else if (simState === 'miss' || simState === 'calculating') {
-          next.push(Math.random() * 40 + 60)
-        } else {
-          next.push(Math.random() * 5 + 2)
-        }
-        return next
-      })
-    }, 100)
-    return () => clearInterval(interval)
-  }, [simState])
-
-  const isCritical = simState === 'miss' || simState === 'calculating'
-
-  return (
-    <div className={['relative overflow-hidden rounded-xl border transition-all duration-500 p-4 mt-4 shadow-xl',
-      isCritical ? 'border-rose-500/60 bg-rose-950/20' : 'border-slate-800 bg-slate-950'
-    ].join(' ')}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500">Live Bandwidth Monitor</div>
-        <div className="flex items-center gap-1.5">
-          <div className={['size-1.5 rounded-full animate-pulse', isCritical ? 'bg-rose-500' : 'bg-emerald-500'].join(' ')}></div>
-          <span className={['text-[9px] font-mono', isCritical ? 'text-rose-400' : 'text-emerald-400'].join(' ')}>
-            {isCritical ? 'SPIKE' : 'NOMINAL'}
-          </span>
-        </div>
-      </div>
-      <div className="flex items-end gap-[2px] h-16">
-        {history.map((v, i) => {
-          const pct = Math.min(v, 100)
-          const isSpike = v > 40
-          return (
-            <div key={i} className="flex-1 rounded-t transition-all duration-100"
-              style={{
-                height: `${pct}%`,
-                background: isSpike
-                  ? `linear-gradient(to top, rgb(244,63,94), rgb(251,113,133))`
-                  : `linear-gradient(to top, rgb(34,211,238), rgb(6,182,212))`,
-                opacity: 0.3 + (i / history.length) * 0.7
-              }}
-            />
-          )
-        })}
-      </div>
-      <div className="flex justify-between mt-1.5 text-[8px] font-mono text-slate-600">
-        <span>-3s</span>
-        <span>now</span>
-      </div>
-    </div>
-  )
-}
-
-// ─── GLOBAL TELEMETRY CONSOLE ──────────────────────────────────────────────
-function GlobalTelemetryConsole({ hits, misses, xp, timeSaved, totalOps, hitRate, isLevelingUp, defragmentCache, reset }: any) {
-  const [matrix, setMatrix] = useState<string[]>([])
-
-  useEffect(() => {
-    const arr: string[] = []
-    for (let i = 0; i < 150; i++) {
-      arr.push('0x' + Math.floor(Math.random() * 65535).toString(16).toUpperCase().padStart(4, '0'))
-    }
-    setMatrix(arr)
-  }, [])
-
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-indigo-500/30 bg-slate-950/95 p-4 mt-4 shadow-xl">
-      {/* Matrix rain background */}
-      <div className="absolute inset-0 opacity-[0.04] overflow-hidden pointer-events-none font-mono text-[8px] text-emerald-400 leading-tight break-all p-2">
-        {matrix.join(' ')}
-      </div>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-[9px] font-mono uppercase tracking-wider text-indigo-400 font-bold">System Telemetry</div>
-          <div className="flex items-center gap-1.5">
-            <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="text-[9px] font-mono text-emerald-400">ONLINE</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-slate-900/80 rounded-lg border border-slate-800 p-2 text-center">
-            <div className="text-[8px] text-slate-500 font-mono uppercase">XP</div>
-            <div className={['text-lg font-bold font-mono', isLevelingUp ? 'text-amber-400 animate-pulse' : 'text-indigo-400'].join(' ')}>{xp}</div>
-          </div>
-          <div className="bg-slate-900/80 rounded-lg border border-slate-800 p-2 text-center">
-            <div className="text-[8px] text-slate-500 font-mono uppercase">Hit Rate</div>
-            <div className={['text-lg font-bold font-mono', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : 'text-rose-400'].join(' ')}>
-              {hitRate}{totalOps > 0 ? '%' : ''}
-            </div>
-          </div>
-          <div className="bg-slate-900/80 rounded-lg border border-slate-800 p-2 text-center">
-            <div className="text-[8px] text-slate-500 font-mono uppercase">Ops</div>
-            <div className="text-lg font-bold font-mono text-cyan-400">{totalOps}</div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={defragmentCache}
-            className="flex-1 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-[9px] font-mono text-indigo-400 hover:bg-indigo-500/20 transition-all uppercase font-bold">
-            Optimize
-          </button>
-          <button onClick={reset}
-            className="flex-1 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[9px] font-mono text-slate-500 hover:text-slate-300 transition-all uppercase font-bold">
-            Reset
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── GRAND ANALYTICS TERMINAL ──────────────────────────────────────────────
-function GrandAnalyticsTerminal({ hits, misses, xp, timeSaved }: any) {
-  const totalOps = hits + misses
-  const hitPct = totalOps > 0 ? (hits / totalOps) * 100 : 0
-  const grade = hitPct >= 90 ? 'A+' : hitPct >= 80 ? 'A' : hitPct >= 70 ? 'B' : hitPct >= 50 ? 'C' : 'F'
-  const gradeColor = grade.startsWith('A') ? 'text-emerald-400 border-emerald-500/60 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
-    : grade === 'B' ? 'text-cyan-400 border-cyan-500/60 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
-    : grade === 'C' ? 'text-amber-400 border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
-    : 'text-rose-400 border-rose-500/60 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
-
-  const [bars, setBars] = useState<number[]>(Array(40).fill(5))
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBars(prev => {
-        const next = [...prev.slice(1)]
-        const base = hitPct > 0 ? hitPct * 0.8 : 5
-        next.push(base + Math.random() * 20)
-        return next
-      })
-    }, 150)
-    return () => clearInterval(interval)
-  }, [hitPct])
-
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-violet-500/30 bg-slate-950/95 p-4 mt-4 shadow-xl">
-      <div className="text-[9px] font-mono uppercase tracking-wider text-violet-400 font-bold mb-3">Analytics Terminal</div>
-      <div className="flex items-center gap-4 mb-3">
-        <div className={['size-16 rounded-xl border-2 flex items-center justify-center font-bold text-2xl font-mono', gradeColor].join(' ')}>
-          {totalOps > 0 ? grade : '—'}
-        </div>
-        <div className="flex-1 space-y-1">
-          <div className="text-[10px] text-slate-400">
-            Overall Hit Rate: <span className="text-white font-bold">{totalOps > 0 ? hitPct.toFixed(1) + '%' : '—'}</span>
-          </div>
-          <div className="text-[10px] text-slate-400">
-            Time Saved: <span className="text-cyan-400 font-mono">{timeSaved}ns</span>
-          </div>
-          <div className="text-[10px] text-slate-400">
-            XP Earned: <span className="text-indigo-400 font-mono">{xp}</span>
-          </div>
-        </div>
-      </div>
-      <div className="text-[8px] text-slate-600 font-mono uppercase tracking-wider mb-1">Energy Efficiency</div>
-      <div className="flex items-end gap-[1px] h-8">
-        {bars.map((v, i) => (
-          <div key={i} className="flex-1 rounded-t transition-all duration-100"
-            style={{
-              height: `${Math.min(v, 100)}%`,
-              background: v > 70 ? 'rgb(16,185,129)' : v > 40 ? 'rgb(34,211,238)' : 'rgb(244,63,94)',
-              opacity: 0.3 + (i / bars.length) * 0.7
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // ─── MAPPING FUNCTIONS SIMULATOR ──────────────────────────────────────────
 // Self-contained: models a tiny 4-slot cache over a 16-block memory space
 // (4-bit block address) so students can watch Direct / Set-Associative /
@@ -1506,7 +1218,6 @@ function MappingSimulator() {
   const [order, setOrder] = useState<number[]>([]) // slot indices, oldest-used first (LRU order)
   const [log, setLog] = useState<MapLogEntry[]>([])
   const [flash, setFlash] = useState<{ slot: number; kind: 'hit' | 'placed' | 'evicted' }[]>([])
-  const [laserFiring, setLaserFiring] = useState<number[]>([])
 
   const candidates = candidateSlots(block, mapType)
   const bits = bitInfo(mapType)
@@ -1515,48 +1226,43 @@ function MappingSimulator() {
   const touchOrder = (prev: number[], slot: number) => [...prev.filter(s => s !== slot), slot]
 
   const runAccess = (b: number) => {
-    const cslots = candidateSlots(b, mapType)
-    setLaserFiring(cslots)
+    setSlots(prevSlots => {
+      const cslots = candidateSlots(b, mapType)
+      const hitSlot = cslots.find(s => prevSlots[s].block === b)
 
-    setTimeout(() => {
-      setLaserFiring([])
-      setSlots(prevSlots => {
-        const hitSlot = cslots.find(s => prevSlots[s].block === b)
+      if (hitSlot !== undefined) {
+        setOrder(o => touchOrder(o, hitSlot))
+        setFlash([{ slot: hitSlot, kind: 'hit' }])
+        setLog(l => [{ block: b, outcome: 'hit' as const, placedSlot: hitSlot, evictedSlot: null, evictedBlock: null }, ...l].slice(0, 6))
+        return prevSlots
+      }
 
-        if (hitSlot !== undefined) {
-          setOrder(o => touchOrder(o, hitSlot))
-          setFlash([{ slot: hitSlot, kind: 'hit' }])
-          setLog(l => [{ block: b, outcome: 'hit' as const, placedSlot: hitSlot, evictedSlot: null, evictedBlock: null }, ...l].slice(0, 6))
-          return prevSlots
-        }
+      // miss — find an empty candidate slot first
+      const emptySlot = cslots.find(s => prevSlots[s].block === null)
+      let targetSlot: number
+      let evictedBlock: number | null = null
 
-        // miss — find an empty candidate slot first
-        const emptySlot = cslots.find(s => prevSlots[s].block === null)
-        let targetSlot: number
-        let evictedBlock: number | null = null
+      if (emptySlot !== undefined) {
+        targetSlot = emptySlot
+      } else {
+        // evict the least-recently-used slot among the candidates
+        const lruOrdered = [...cslots].sort((a, b2) => {
+          const ai = order.indexOf(a), bi = order.indexOf(b2)
+          return ai - bi
+        })
+        targetSlot = lruOrdered[0]
+        evictedBlock = prevSlots[targetSlot].block
+      }
 
-        if (emptySlot !== undefined) {
-          targetSlot = emptySlot
-        } else {
-          // evict the least-recently-used slot among the candidates
-          const lruOrdered = [...cslots].sort((a, b2) => {
-            const ai = order.indexOf(a), bi = order.indexOf(b2)
-            return ai - bi
-          })
-          targetSlot = lruOrdered[0]
-          evictedBlock = prevSlots[targetSlot].block
-        }
-
-        const next = prevSlots.map((s, i) => (i === targetSlot ? { block: b } : s))
-        setOrder(o => touchOrder(o, targetSlot))
-        setFlash(evictedBlock !== null
-          ? [{ slot: targetSlot, kind: 'evicted' }]
-          : [{ slot: targetSlot, kind: 'placed' }])
-        setLog(l => [{ block: b, outcome: 'miss' as const, placedSlot: targetSlot, evictedSlot: evictedBlock !== null ? targetSlot : null, evictedBlock }, ...l].slice(0, 6))
-        return next
-      })
-      setTimeout(() => setFlash([]), 900)
-    }, 400)
+      const next = prevSlots.map((s, i) => (i === targetSlot ? { block: b } : s))
+      setOrder(o => touchOrder(o, targetSlot))
+      setFlash(evictedBlock !== null
+        ? [{ slot: targetSlot, kind: 'evicted' }]
+        : [{ slot: targetSlot, kind: 'placed' }])
+      setLog(l => [{ block: b, outcome: 'miss' as const, placedSlot: targetSlot, evictedSlot: evictedBlock !== null ? targetSlot : null, evictedBlock }, ...l].slice(0, 6))
+      return next
+    })
+    setTimeout(() => setFlash([]), 900)
   }
 
   const runConflictDemo = () => {
@@ -1647,7 +1353,7 @@ function MappingSimulator() {
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
           <div className="text-[9px] text-slate-500 font-mono uppercase tracking-wider">
-            {laserFiring.length > 0 ? 'TAG COMPARATOR' : `Cache (${MAP_TOTAL_SLOTS} slots${mapType === 'set2' ? ' · 2 sets × 2 ways' : ''})`}
+            Cache ({MAP_TOTAL_SLOTS} slots{mapType === 'set2' ? ' · 2 sets × 2 ways' : ''})
           </div>
           <div className={['text-[9px] font-mono font-bold px-2 py-0.5 rounded', willHit ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'].join(' ')}>
             Block {block} will {willHit ? 'HIT' : 'MISS'}
@@ -1664,12 +1370,9 @@ function MappingSimulator() {
             else if (isCandidate) cls = 'bg-slate-800 border-cyan-500/40 text-slate-200'
             else if (s.block !== null) cls = 'bg-slate-800 border-slate-700 text-slate-300'
             return (
-              <div key={i} className={['relative rounded-lg border p-3 text-center font-mono transition-all duration-300 overflow-hidden', cls].join(' ')}>
-                {laserFiring.includes(i) && (
-                  <div className="absolute inset-0 bg-cyan-400/20 border border-cyan-400/60 animate-pulse" style={{ boxShadow: '0 0 15px rgba(34,211,238,0.4)' }} />
-                )}
-                <div className="text-[8px] text-slate-500 mb-1 relative z-10">Slot {i}</div>
-                <div className="text-lg font-bold relative z-10">{s.block === null ? '—' : s.block}</div>
+              <div key={i} className={['rounded-lg border p-3 text-center font-mono transition-all duration-300', cls].join(' ')}>
+                <div className="text-[8px] text-slate-500 mb-1">Slot {i}</div>
+                <div className="text-lg font-bold">{s.block === null ? '—' : s.block}</div>
               </div>
             )
           })}
@@ -1858,31 +1561,15 @@ function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; o
         <div className="grid grid-cols-4 gap-2">
           {state.slots.map((b, i) => {
             const f = flash?.slot === i ? flash : null
-            // Visual aging: older blocks in recency order appear more faded/sepia
-            const recIdx = state.recencyOrder.indexOf(i)
-            const maxIdx = Math.max(1, state.recencyOrder.length - 1)
-            const ageFactor = recIdx !== -1 ? 1 - (recIdx / maxIdx) : 0
             let cls = 'bg-slate-900 border-slate-800 text-slate-600'
             if (f?.kind === 'hit') cls = 'bg-emerald-500/20 border-emerald-500/60 text-emerald-300 scale-105'
             else if (f?.kind === 'evicted') cls = 'bg-rose-500/20 border-rose-500/60 text-rose-300 scale-105'
             else if (f?.kind === 'placed') cls = 'bg-cyan-500/20 border-cyan-500/60 text-cyan-300 scale-105'
             else if (b !== null) cls = 'bg-slate-800 border-slate-700 text-slate-200'
             return (
-              <div key={i}
-                className={['relative rounded-lg border p-3 text-center font-mono transition-all duration-300 overflow-hidden', cls].join(' ')}
-                style={b !== null && !f ? {
-                  opacity: Math.max(0.35, 1 - (ageFactor * 0.65)),
-                  filter: `sepia(${ageFactor * 0.8}) hue-rotate(-20deg)`
-                } : undefined}
-              >
-                {f?.kind === 'evicted' && (
-                  <div className="absolute inset-0 bg-rose-500/30 flex items-center justify-center gap-1 animate-pulse" style={{ zIndex: 20 }}>
-                    <span className="text-rose-300 font-bold text-[9px] line-through">{b}</span>
-                    <span className="text-rose-500 font-bold text-[8px]">VICTIM</span>
-                  </div>
-                )}
-                <div className="text-[8px] text-slate-500 mb-1 relative z-10">Slot {i}</div>
-                <div className="text-lg font-bold relative z-10">{b ?? '—'}</div>
+              <div key={i} className={['rounded-lg border p-3 text-center font-mono transition-all duration-300', cls].join(' ')}>
+                <div className="text-[8px] text-slate-500 mb-1">Slot {i}</div>
+                <div className="text-lg font-bold">{b ?? '—'}</div>
               </div>
             )
           })}
@@ -2102,16 +1789,14 @@ function WritePolicySimulator() {
 
       {/* CPU → Cache → RAM flow diagram */}
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4">
-        <div className="flex items-center gap-0 mb-3">
+        <div className="flex items-center gap-2 mb-3">
           <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
             flow ? 'border-white/40 bg-white/10 text-white' : 'border-slate-800 bg-slate-900 text-slate-400'
           ].join(' ')}>
             <div className="text-[9px] font-mono uppercase tracking-wider">CPU</div>
             <div className="text-[8px] text-slate-500">writes {flow ? log[0]?.block ?? '' : ''}</div>
           </div>
-          <div className={['h-1 w-8 rounded-full transition-all duration-500',
-            flow?.cache !== null && flow?.cache !== undefined ? 'bg-cyan-500 shadow-[0_0_8px] shadow-cyan-500/50' : 'bg-slate-800'
-          ].join(' ')} style={flow?.cache !== null && flow?.cache !== undefined ? { animation: 'conduit-flow 0.6s ease-in-out infinite' } : undefined} />
+          <div className={['text-slate-600 transition-all', flow ? 'text-cyan-400' : ''].join(' ')}>→</div>
           <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
             flow?.kind === 'bypass' ? 'border-slate-800 bg-slate-900 text-slate-600 opacity-40' :
             flow?.cache !== null && flow?.cache !== undefined ? 'border-cyan-500/60 bg-cyan-500/10 text-cyan-300' :
@@ -2120,9 +1805,7 @@ function WritePolicySimulator() {
             <div className="text-[9px] font-mono uppercase tracking-wider">Cache</div>
             <div className="text-[8px] text-slate-500">{dirtyCount} dirty line{dirtyCount === 1 ? '' : 's'}</div>
           </div>
-          <div className={['h-1 w-8 rounded-full transition-all duration-500',
-            flow?.ram ? (flow.flush ? 'bg-rose-500 shadow-[0_0_8px] shadow-rose-500/50' : 'bg-amber-500 shadow-[0_0_8px] shadow-amber-500/50') : 'bg-slate-800'
-          ].join(' ')} style={flow?.ram ? { animation: 'conduit-flow 0.6s ease-in-out infinite' } : undefined} />
+          <div className={['transition-all', flow?.ram ? 'text-rose-400' : 'text-slate-600'].join(' ')}>→</div>
           <div className={['flex-1 rounded-lg border p-2 text-center transition-all duration-300',
             flow?.ram ? (flow.flush ? 'border-rose-500/60 bg-rose-500/10 text-rose-300' : 'border-emerald-500/60 bg-emerald-500/10 text-emerald-300') : 'border-slate-800 bg-slate-900 text-slate-400'
           ].join(' ')}>

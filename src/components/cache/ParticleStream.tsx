@@ -203,8 +203,8 @@ export function ParticleStream({ state, burstKey }: ParticleStreamProps) {
       className="absolute inset-0 pointer-events-none z-10"
       style={{ width: '100%', height: '100%' }}
       options={config}
-      init={particlesInit}
-      loaded={particlesLoaded}
+      
+      
     />
   )
 }

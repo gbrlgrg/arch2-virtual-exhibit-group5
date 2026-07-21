@@ -23,9 +23,10 @@ type VisualizerProps = {
   activeIndex: number | null
   replacementAlgo?: 'lru' | 'mru' | 'fifo' | 'random'
   optimizationCount?: number
+  isThrashing?: boolean
 }
 
-export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo = 'lru', optimizationCount = 0 }: VisualizerProps) {
+export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo = 'lru', optimizationCount = 0, isThrashing = false }: VisualizerProps) {
   const isHit = state === 'hit'
   const isMiss = state === 'miss'
   const isCalc = state === 'calculating'
@@ -44,6 +45,14 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
     }
     prevStateRef.current = state
   }, [state])
+
+  // Heatmap tracking
+  const [heatmap, setHeatmap] = useState<Record<number, number>>({});
+  useEffect(() => {
+    if ((state === 'hit' || state === 'miss') && activeIndex !== null) {
+      setHeatmap(prev => ({ ...prev, [activeIndex]: Date.now() }));
+    }
+  }, [state, activeIndex]);
 
   // ── Tetris Optimization Animation ─────────────────────────────────────
   const prevOptCountRef = useRef(optimizationCount)
@@ -234,6 +243,18 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
               {cacheStatusText}
             </div>
 
+            {isThrashing && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none animate-klaxon">
+                <div className="bg-rose-950 border border-rose-500 p-6 rounded-2xl shadow-[0_0_100px_rgba(244,63,94,0.8)] flex flex-col items-center gap-4 animate-hardware-shake">
+                  <AlertTriangle className="size-16 text-rose-500 animate-pulse" />
+                  <div className="text-3xl font-black text-rose-500 tracking-[0.2em] uppercase">Thrashing Detected</div>
+                  <div className="text-rose-300 font-mono text-sm max-w-sm text-center">
+                    The CPU is trapped in a death spiral! Blocks map to the exact same slot, causing 100% misses and constant evictions.
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Cache rows grid */}
             <div
               className="grid grid-cols-4 gap-2"
@@ -309,7 +330,7 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
           </Tilt>
 
           {/* Cache -> RAM connector */}
-          <AnimatedConduit type="cache-ram" state={state} />
+          <AnimatedConduit type="cache-ram" state={state} isDirtyFlush={evictedIndex !== null} />
 
           {/* MAIN MEMORY / RAM BLOCK — wrapped with 3D tilt */}
           <Tilt
