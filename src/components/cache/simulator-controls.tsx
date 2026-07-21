@@ -116,14 +116,14 @@ export function SimulatorControls({
                 type="button"
                 onClick={() => onForceModeChange(opt.id)}
                 className={[
-                  'flex-1 rounded px-2 py-1.5 text-xs font-medium font-mono transition-all duration-300 active:scale-95',
+                  'flex-1 rounded px-2 py-1.5 text-xs font-medium transition-all duration-300 active:scale-95',
                   active
                     ? opt.id === 'hit'
                       ? 'bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)] ring-1 ring-emerald-500/50 neon-text-emerald'
                       : opt.id === 'miss'
                         ? 'bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.4)] ring-1 ring-amber-500/50 neon-text-amber'
                         : 'bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.4)] ring-1 ring-cyan-500/50 neon-text-cyan'
-                    : 'text-slate-300',
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50',
                 ].join(' ')}
                 aria-pressed={active}
               >
@@ -136,7 +136,7 @@ export function SimulatorControls({
         <Button
           type="submit"
           disabled={isBusy}
-          className="group w-full bg-cyan-500/20 text-cyan-300 font-bold tracking-wide border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] transition-all duration-300 disabled:opacity-60"
+          className="group w-full bg-cyan-500/20 text-cyan-300 font-bold tracking-wide border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] hover:bg-cyan-500/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-300 disabled:opacity-60 disabled:hover:translate-y-0 disabled:active:scale-100"
         >
           {isBusy ? (
             <>

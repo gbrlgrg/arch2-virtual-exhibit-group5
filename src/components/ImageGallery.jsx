@@ -188,7 +188,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 12,
-    fontFamily: "'JetBrains Mono', monospace",
+    fontFamily: "sans-serif",
     maxWidth: 800,
     margin: "0 auto",
   },

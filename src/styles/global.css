@@ -37,7 +37,7 @@ html {
 
 body {
     color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "Noto Sans Variable", sans-serif;
     line-height: 1.5;
     flex-direction: column;
     display: flex;
@@ -52,7 +52,7 @@ body {
     color: var(--bg2);
     text-align: center;
     font-size: 3rem;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "Lora Variable";
     text-shadow: 5px 5px 0px var(--text);
 }
 
@@ -98,8 +98,8 @@ body {
 }
 
 .button:hover {
-    border-color: var(--border);
-    color: var(--text);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 /* Main body */
@@ -127,7 +127,7 @@ body {
 
 .content__titlemeta h1 {
     margin-top: 0;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "Lora Variable";
 }
 
 /* Main exhibit article content */
@@ -154,7 +154,7 @@ body {
 .article h4,
 .article h5,
 .article h6 {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "Lora Variable";
     border-bottom: 1px solid var(--border);
 }
 
@@ -177,7 +177,7 @@ body {
 
 .toc h2 {
     border-bottom: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "Lora Variable";
     margin-top: 0;
     padding-bottom: 0.5rem;
 }
@@ -189,12 +189,12 @@ body {
 }
 
 .toc__item a {
-    color: var(--text);
-    text-decoration: none;
+    color: var(--accent);
+    text-decoration-style: dotted;
 }
 
 .toc__item a:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 footer {

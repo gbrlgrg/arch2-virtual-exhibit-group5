@@ -18,7 +18,8 @@ const allExhibits = await Astro.glob('../pages/*.mdx');
 const exhibits = allExhibits.filter(exhibit => !exhibit.file.includes('index.mdx'));
 
 import 'normalize.css';
-import '@fontsource/jetbrains-mono';
+import '@fontsource-variable/lora';
+import '@fontsource-variable/noto-sans';
 
 import '../styles/global.css'; 
 

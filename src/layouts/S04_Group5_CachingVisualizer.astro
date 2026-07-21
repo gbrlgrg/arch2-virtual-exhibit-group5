@@ -17,6 +17,8 @@ const { title, author, readingTime } = Astro.props.frontmatter ?? Astro.props;
 const { headings } = Astro.props;
 
 import 'normalize.css';
+import '@fontsource-variable/lora';
+import '@fontsource-variable/noto-sans';
 import '@fontsource/jetbrains-mono';
 
 import { Icon } from 'astro-icon/components';
@@ -39,7 +41,6 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   </head>
 
   <body class="cv-root">
-    <canvas id="matrix-rain" aria-hidden="true"></canvas>
     <!-- ─── HERO ──────────────────────────────────────────────── -->
     <header class="cv-hero">
       <div class="cv-hero__mesh" aria-hidden="true"></div>
@@ -136,20 +137,20 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     --cv-bg-deep:    #06080f;
     --cv-bg-surface: #0c1021;
     --cv-bg-card:    #111630;
-    --cv-border: rgba(99, 102, 241, 0.18);
+    --cv-border:     rgba(99, 102, 241, 0.18);
     --cv-text:       #e2e8f0;
     --cv-text-dim:   #94a3b8;
     --cv-text-faint: #475569;
     --cv-accent-cyan:    #22d3ee;
-    --cv-accent-indigo: #818cf8;
+    --cv-accent-indigo:  #818cf8;
     --cv-accent-emerald: #34d399;
     --cv-accent-amber:   #fbbf24;
     --cv-glow-cyan:   rgba(34, 211, 238, 0.15);
-    --cv-glow-indigo: rgba(99, 102, 241, 0.15);
+    --cv-glow-indigo: rgba(129, 140, 248, 0.15);
     --cv-radius: 0.75rem;
-    --cv-font-body: 'JetBrains Mono', monospace;
-    --cv-font-heading: 'JetBrains Mono', monospace;
-    --cv-font-mono: 'JetBrains Mono', monospace;
+    --cv-font-body: 'Noto Sans Variable', system-ui, sans-serif;
+    --cv-font-heading: 'Lora Variable', Georgia, serif;
+    --cv-font-mono: 'JetBrains Mono', Consolas, monospace;
   }
 
   /* ================================================================
@@ -245,7 +246,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   }
 
   /* Back link */
-  a.cv-hero__back {
+  .cv-hero__back {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -254,17 +255,17 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #cbd5e1;
+    color: var(--cv-text-dim);
     text-decoration: none;
     padding: 0.3rem 0.65rem;
     border: 1px solid rgba(148,163,184,0.2);
     border-radius: 9999px;
     transition: color 0.2s, border-color 0.2s, background 0.2s;
   }
-  a.cv-hero__back:hover {
-    color: #e2e8f0;
-    border-color: rgba(148,163,184,0.2);
-    background: transparent;
+  .cv-hero__back:hover {
+    color: var(--cv-accent-cyan);
+    border-color: rgba(34,211,238,0.4);
+    background: rgba(34,211,238,0.06);
   }
 
   /* Eyebrow */
@@ -347,8 +348,8 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     transition: border-color 0.2s, background 0.2s;
   }
   .cv-hero__reading-time:hover {
-    border-color: rgba(52, 211, 153, 0.3);
-    background: rgba(52, 211, 153, 0.08);
+    border-color: rgba(52, 211, 153, 0.5);
+    background: rgba(52, 211, 153, 0.12);
   }
 
   /* Authors section */
@@ -390,9 +391,9 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     letter-spacing: 0.01em;
   }
   .cv-hero__author-chip:hover {
-    color: #cbd5e1;
-    border-color: rgba(148, 163, 184, 0.18);
-    background: rgba(148, 163, 184, 0.06);
+    color: #e2e8f0;
+    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(129, 140, 248, 0.08);
   }
 
   /* ================================================================
@@ -441,9 +442,11 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   }
 
   .cv-nav__link:hover {
-    color: #e2e8f0;
-    background: rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.35);
+    color: #ffffff;
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(129, 140, 248, 0.6);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
   }
 
   .cv-nav__link:active {
@@ -460,7 +463,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   }
   .cv-nav__link--sub:hover {
     color: #e2e8f0;
-    background: rgba(99, 102, 241, 0.06);
+    background: rgba(148, 163, 184, 0.12);
     border-color: rgba(148, 163, 184, 0.35);
     box-shadow: 0 0 12px rgba(148, 163, 184, 0.15);
   }
@@ -530,12 +533,13 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   }
 
   .cv-article :global(a) {
-    color: #e2e8f0;
-    text-decoration: none;
-    transition: none;
+    color: var(--cv-accent-cyan);
+    text-decoration-color: rgba(34,211,238,0.35);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s;
   }
   .cv-article :global(a:hover) {
-    color: #e2e8f0;
+    text-decoration-color: var(--cv-accent-cyan);
   }
 
   .cv-article :global(ul),
@@ -581,7 +585,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
 
   .cv-article :global(blockquote) {
     border-left: 3px solid var(--cv-accent-indigo);
-    background: rgba(99, 102, 241, 0.06);
+    background: rgba(129,140,248,0.06);
     padding: 1rem 1.25rem;
     margin: 1.5rem 0;
     border-radius: 0 var(--cv-radius) var(--cv-radius) 0;
@@ -594,7 +598,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     background: linear-gradient(
       to right,
       transparent,
-      rgba(99, 102, 241, 0.25) 25%,
+      rgba(99,102,241,0.25) 25%,
       rgba(34,211,238,0.25) 75%,
       transparent
     );
@@ -616,7 +620,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   }
 
   .cv-article :global(th) {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(99,102,241,0.08);
     font-weight: 600;
     color: #e2e8f0;
     font-family: var(--cv-font-mono);
@@ -812,72 +816,4 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
       font-size: 0.68rem;
     }
   }
-
-  /* Matrix rain canvas */
-  #matrix-rain {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.45;
-  }
-
-  .cv-root {
-    position: relative;
-    z-index: 1;
-  }
 </style>
-
-<script is:inline>
-(function() {
-  const canvas = document.getElementById('matrix-rain');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const FONT_SIZE = 14;
-  const CHARS = '01ア イ ウ エ オ カ キ ク ケ コ サ シ ス セ ソ'.split(' ');
-  const indigo = [99, 102, 241];
-
-  let columns, drops;
-
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    columns = Math.floor(canvas.width / FONT_SIZE);
-    drops = Array.from({ length: columns }, () => Math.random() * -100);
-  }
-
-  function draw() {
-    ctx.fillStyle = 'rgba(6, 8, 15, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.font = `${FONT_SIZE}px monospace`;
-
-    for (let i = 0; i < columns; i++) {
-      const char = CHARS[Math.floor(Math.random() * CHARS.length)];
-      const x = i * FONT_SIZE;
-      const y = drops[i] * FONT_SIZE;
-
-      const brightness = Math.random();
-      ctx.fillStyle = `rgba(${indigo[0]}, ${indigo[1]}, ${indigo[2]}, ${0.4 + brightness * 0.6})`;
-
-      if (Math.random() > 0.92) {
-        ctx.fillStyle = `rgba(200, 210, 255, 0.95)`;
-      }
-
-      ctx.fillText(char, x, y);
-
-      if (y > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      drops[i] += 0.5 + Math.random() * 0.5;
-    }
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-  setInterval(draw, 45);
-})();
-</script>
