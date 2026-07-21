@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 import { SimulatorControls } from './simulator-controls'
 import { Visualizer, type SimState } from './visualizer'
 import {
@@ -18,6 +18,7 @@ import { useMiniGames } from '../../lib/useMiniGames'
 import { OverclockSurge, ThrashingNightmare, TrolleyMiniGame, PowerOutageMiniGame, ControllerExamMiniGame } from './MiniGames'
 import { NumberRoller } from './NumberRoller'
 import { GlobalTelemetryConsole, LiveBandwidthMonitor } from './Telemetry'
+import { Scoreboard, getCurrentRank } from './Scoreboard'
 
 type ForceMode = 'auto' | 'hit' | 'miss'
 type ReplacementAlgo = 'lru' | 'mru' | 'fifo' | 'random'
@@ -103,6 +104,18 @@ export default function MuseumEngine() {
     setXp(x => x + 10)
     playOptimize()
   }
+
+  // Ranking: detect level-up when XP crosses a rank threshold
+  const prevRankRef = useRef(getCurrentRank(0).current.title)
+  useEffect(() => {
+    const { current } = getCurrentRank(xp)
+    if (current.title !== prevRankRef.current) {
+      prevRankRef.current = current.title
+      setIsLevelingUp(true)
+      playGlitch()
+      setTimeout(() => setIsLevelingUp(false), 3000)
+    }
+  }, [xp, playGlitch])
 
 const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const simulatorRef = useRef<HTMLDivElement>(null)
@@ -193,7 +206,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   if (isGlitching) {
     ambientClasses = "glitch-overlay";
   } else if (hackerMode) {
-    ambientClasses = "hacker-crt";
+    ambientClasses = "hacker-mode hacker-crt";
   } else if (consecutiveHits >= 5) {
     ambientClasses = "bg-blue-950/80 shadow-[inset_0_0_150px_rgba(37,99,235,0.4)] border-blue-400 border-2 scale-[1.01] transition-all duration-300";
   } else if (speedMultiplier < 1) {
@@ -268,7 +281,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
           <div className="flex items-center gap-2">
             <GraduationCap className="size-5 text-indigo-400 shrink-0" />
             <h3 className="text-lg font-bold tracking-tight text-white leading-tight">
-              Ca-Ching! — Cache Memory Guide
+              {hackerMode ? toHexDump('Ca-Ching!') : 'Ca-Ching! — Cache Memory Guide'}
             </h3>
           </div>
         </header>
@@ -279,7 +292,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
             <TabButton
               key={t.id}
               id={t.id}
-              label={t.label}
+              label={hackerMode ? toHexDump(t.label) : t.label}
               icon={t.icon}
               active={activeTab === t.id}
               onClick={() => setActiveTab(t.id)}
@@ -916,7 +929,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
         {/* Scoreboard — only meaningful while the address-lookup simulator (architecture tab) is active */}
         {activeTab === 'architecture' && (
           <div className="relative w-full flex flex-col items-center gap-3 z-10">
-            
+            <Scoreboard xp={xp} timeSaved={timeSaved} isLevelingUp={isLevelingUp} />
             {/* BULLET TIME / GOD MODE SLIDER */}
             <div className="w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
               <div className="flex flex-col">
@@ -1012,7 +1025,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
                 <span className="flex size-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   <MemoryStick className="size-4" />
                 </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">{simulatorTitleMap[activeTab]}</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">{hackerMode ? toHexDump(simulatorTitleMap[activeTab]) : simulatorTitleMap[activeTab]}</span>
               </div>
               <div className="flex items-center gap-2">
                 {activeTab === 'replacement' && (
@@ -1047,6 +1060,7 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
                   replacementAlgo={replacementAlgo}
                 />
                 <OverclockSurge isOverclocking={miniGames.isOverclocking} handleOverclock={miniGames.handleOverclock} />
+                <LiveBandwidthMonitor simState={simState} />
               </>
             )}
 
