@@ -107,6 +107,8 @@ export function useMiniGames(actions: SimulatorActions) {
     examState,
     setExamState,
     examTime,
+    examIndex,
+    setExamIndex,
     startExam,
     answerExam,
     triggerSimulation
