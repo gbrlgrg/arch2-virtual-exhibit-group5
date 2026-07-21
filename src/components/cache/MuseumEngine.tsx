@@ -149,7 +149,8 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
             
             if (nextCombo === 5) startFlowStateSynth();
             
-            setHits(h => h + 1)
+            setHits(h => h + 1);
+            setXp(x => x + 10); // +10 XP for a general Cache HIT
             setConsecutiveHits(nextCombo)
           } else if (result.outcome === 'miss') {
             if (consecutiveHits >= 3) {
@@ -159,7 +160,8 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
               playMiss();
             }
             
-            setMisses(m => m + 1)
+            setMisses(m => m + 1);
+            setXp(x => Math.max(0, x - 5)); // -5 XP for a general Cache MISS (minimum 0)
             setConsecutiveHits(0)
           }
           

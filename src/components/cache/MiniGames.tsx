@@ -361,7 +361,7 @@ export function ControllerExamMiniGame({ examState, setExamState, examTime, exam
         
         {examState === 'idle' && (
           <>
-            <p className="text-slate-400 text-[10px] mb-3">Prove you have the instincts of a hardware controller. 20 Questions. 5 seconds each. Earn XP per correct hit.</p>
+            <p className="text-slate-400 text-[10px] mb-3">Prove you have the instincts of a hardware controller. 20 Questions. 15 seconds each. Earn XP per correct hit.</p>
             <button 
               onClick={startExam}
               className="px-4 py-2 rounded bg-violet-500/10 border border-violet-500 text-violet-400 font-mono text-[10px] uppercase font-bold hover:bg-violet-500 hover:text-white transition-all shadow-[0_0_15px_rgba(139,92,246,0.3)]"

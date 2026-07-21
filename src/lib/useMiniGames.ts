@@ -63,7 +63,7 @@ export function useMiniGames(actions: SimulatorActions) {
   const startExam = useCallback(() => {
     setExamState('running');
     setExamIndex(0);
-    setExamTime(5);
+    setExamTime(15);
     
     if ((window as any).examTimer) clearInterval((window as any).examTimer);
     
@@ -82,16 +82,37 @@ export function useMiniGames(actions: SimulatorActions) {
   const answerExam = useCallback((correct: boolean) => {
     if ((window as any).examTimer) clearInterval((window as any).examTimer);
     if (correct) {
-      setExamState('success');
-      setXp(x => x + 50)
-      playHit();
+      if (examIndex < 19) {
+        // Not the last question
+        setExamIndex(idx => idx + 1);
+        setXp(x => x + 10);
+        setExamTime(15);
+        playHit();
+        
+        // Restart timer
+        (window as any).examTimer = setInterval(() => {
+          setExamTime(t => {
+            if (t <= 1) {
+              clearInterval((window as any).examTimer);
+              setExamState('fail');
+              return 0;
+            }
+            return t - 1;
+          });
+        }, 1000);
+      } else {
+        // Last question
+        setExamState('success');
+        setXp(x => x + 300); // big bonus
+        playHit();
+      }
     } else {
       setExamState('fail');
       playMiss();
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 300)
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 300);
     }
-  }, [playHit, playMiss, setXp, setIsShaking]);
+  }, [examIndex, playHit, playMiss, setXp, setIsShaking]);
 
   return {
     isOverclocking,
