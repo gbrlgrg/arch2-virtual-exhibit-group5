@@ -165,7 +165,195 @@ export function PowerOutageMiniGame({ powerState, setPowerState }: any) {
 }
 
 // --- CONTROLLER EXAM ---
-export function ControllerExamMiniGame({ examState, setExamState, examTime, startExam, answerExam }: any) {
+export const EXAM_QUESTIONS = [
+  {
+    text: "What are the three types of mapping functions?",
+    options: [
+      { label: "Direct, Associative, Block Set", correct: true },
+      { label: "Linear, Circular, Block", correct: false },
+      { label: "Temporal, Spatial, Random", correct: false },
+      { label: "Write-Through, Write-Back", correct: false }
+    ]
+  },
+  {
+    text: "In direct mapping, how are main memory blocks mapped onto cache blocks?",
+    options: [
+      { label: "Randomly", correct: false },
+      { label: "Modulo fashion", correct: true },
+      { label: "LRU algorithm", correct: false },
+      { label: "Set Associative", correct: false }
+    ]
+  },
+  {
+    text: "Given a direct-mapped cache of 4 blocks, which block does Memory Block 13 map to?",
+    options: [
+      { label: "Block 0", correct: false },
+      { label: "Block 1", correct: true },
+      { label: "Block 2", correct: false },
+      { label: "Block 3", correct: false }
+    ]
+  },
+  {
+    text: "In direct mapping, the main memory address is partitioned into what fields?",
+    options: [
+      { label: "TAG, WORD", correct: false },
+      { label: "SET, WORD", correct: false },
+      { label: "TAG, SET, WORD", correct: false },
+      { label: "TAG, BLOCK, WORD", correct: true }
+    ]
+  },
+  {
+    text: "In full associative mapping, where can a main memory block be placed?",
+    options: [
+      { label: "Only its modulo block", correct: false },
+      { label: "Only in Set 0", correct: false },
+      { label: "Any empty cache block", correct: true },
+      { label: "Directly in DRAM", correct: false }
+    ]
+  },
+  {
+    text: "Which cache mapping method maps a memory block to a specific set based on a modulo operation?",
+    options: [
+      { label: "Direct Mapping", correct: false },
+      { label: "Block Set Associative", correct: true },
+      { label: "Full Associative", correct: false },
+      { label: "Write-Around", correct: false }
+    ]
+  },
+  {
+    text: "In an associative-mapped cache, the main memory address is partitioned into which fields?",
+    options: [
+      { label: "TAG, WORD", correct: true },
+      { label: "TAG, BLOCK, WORD", correct: false },
+      { label: "TAG, SET, WORD", correct: false },
+      { label: "BLOCK, WORD", correct: false }
+    ]
+  },
+  {
+    text: "A '4-way block set associative cache' means what?",
+    options: [
+      { label: "There are 4 blocks total", correct: false },
+      { label: "The set size is 4 blocks", correct: true },
+      { label: "Each block is 4 words", correct: false },
+      { label: "It uses 4 replacement algorithms", correct: false }
+    ]
+  },
+  {
+    text: "In a direct cache with 256 memory words (8-bit address) and 4 cache blocks (4 words/block), how many bits is the TAG?",
+    options: [
+      { label: "2 bits", correct: false },
+      { label: "3 bits", correct: false },
+      { label: "4 bits", correct: true },
+      { label: "6 bits", correct: false }
+    ]
+  },
+  {
+    text: "Which replacement algorithm overwrites the block that has not been accessed for the longest time?",
+    options: [
+      { label: "MRU", correct: false },
+      { label: "Random", correct: false },
+      { label: "FIFO", correct: false },
+      { label: "LRU", correct: true }
+    ]
+  },
+  {
+    text: "Which replacement algorithm replaces the block that was accessed most recently?",
+    options: [
+      { label: "MRU", correct: true },
+      { label: "LRU", correct: false },
+      { label: "LIFO", correct: false },
+      { label: "Write-Through", correct: false }
+    ]
+  },
+  {
+    text: "In direct mapping, what handles the replacement algorithm?",
+    options: [
+      { label: "LRU Policy", correct: false },
+      { label: "MRU Policy", correct: false },
+      { label: "Automatically by modulo", correct: true },
+      { label: "Cache Controller", correct: false }
+    ]
+  },
+  {
+    text: "Which write hit policy writes to both main memory and cache simultaneously?",
+    options: [
+      { label: "Write-Through", correct: true },
+      { label: "Write-Back", correct: false },
+      { label: "Write-Allocate", correct: false },
+      { label: "No Write-Allocate", correct: false }
+    ]
+  },
+  {
+    text: "Which write hit policy writes to cache only and updates main memory later?",
+    options: [
+      { label: "Write-Through", correct: false },
+      { label: "Write-Allocate", correct: false },
+      { label: "Write-Back", correct: true },
+      { label: "Write-Around", correct: false }
+    ]
+  },
+  {
+    text: "On a read miss, if data is sent to the processor prior to cache fill completion, it's called?",
+    options: [
+      { label: "Fetch-on-write", correct: false },
+      { label: "Load-through", correct: true },
+      { label: "Write-behind", correct: false },
+      { label: "Temporal Locality", correct: false }
+    ]
+  },
+  {
+    text: "On a cache write miss, what policy writes directly to main memory without loading into cache?",
+    options: [
+      { label: "Write Allocate", correct: false },
+      { label: "Write-Back", correct: false },
+      { label: "Write-Through", correct: false },
+      { label: "No Write-Allocate", correct: true }
+    ]
+  },
+  {
+    text: "On a cache write miss, what policy loads data into cache followed by a write-hit operation?",
+    options: [
+      { label: "Write Allocate", correct: true },
+      { label: "No Write-Allocate", correct: false },
+      { label: "Write-Around", correct: false },
+      { label: "Load-Through", correct: false }
+    ]
+  },
+  {
+    text: "What is the formula for average memory access time (T_avg)?",
+    options: [
+      { label: "h * C * M", correct: false },
+      { label: "hC + (1-h)*M", correct: true },
+      { label: "M + (1-h)*C", correct: false },
+      { label: "hM + (1-C)*h", correct: false }
+    ]
+  },
+  {
+    text: "If Hit Rate=0.95, Cache Time=1ns, Miss Penalty=82ns, what is T_avg?",
+    options: [
+      { label: "4.15 ns", correct: false },
+      { label: "5.05 ns", correct: true },
+      { label: "9.10 ns", correct: false },
+      { label: "15.00 ns", correct: false }
+    ]
+  },
+  {
+    text: "Why are replacement algorithms needed?",
+    options: [
+      { label: "To write data to DRAM", correct: false },
+      { label: "To identify which block to overwrite when full", correct: true },
+      { label: "To calculate hit rate", correct: false },
+      { label: "To partition the memory address", correct: false }
+    ]
+  }
+];
+
+export function ControllerExamMiniGame({ examState, setExamState, examTime, examIndex, startExam, answerExam }: any) {
+  const q = EXAM_QUESTIONS[examIndex] || EXAM_QUESTIONS[0];
+  
+  // No need for custom local rank variable anymore because Scoreboard is now above!
+  // But we still show total results at the end as requested.
+
   return (
     <div className="mt-8 p-4 bg-slate-950/80 border border-violet-900/50 rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_20px_rgba(139,92,246,0.1)]">
       <div className="text-center z-10 w-full relative">
@@ -173,7 +361,7 @@ export function ControllerExamMiniGame({ examState, setExamState, examTime, star
         
         {examState === 'idle' && (
           <>
-            <p className="text-slate-400 text-[10px] mb-3">Prove you have the instincts of a hardware controller. You have 5 seconds.</p>
+            <p className="text-slate-400 text-[10px] mb-3">Prove you have the instincts of a hardware controller. 20 Questions. 5 seconds each. Earn XP per correct hit.</p>
             <button 
               onClick={startExam}
               className="px-4 py-2 rounded bg-violet-500/10 border border-violet-500 text-violet-400 font-mono text-[10px] uppercase font-bold hover:bg-violet-500 hover:text-white transition-all shadow-[0_0_15px_rgba(139,92,246,0.3)]"
@@ -185,27 +373,37 @@ export function ControllerExamMiniGame({ examState, setExamState, examTime, star
         {examState === 'running' && (
           <div className="animate-pulse">
             <div className="text-[20px] font-mono text-rose-400 font-bold mb-2">{examTime}.00s</div>
-            <p className="text-white text-[10px] mb-3">CPU wants Block 9. Cache is 4-Way Set Associative (Total 16 slots). Which Set does it check?</p>
-            <div className="flex gap-2 justify-center text-[10px] font-mono">
-              <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 0</button>
-              <button onClick={() => answerExam(true)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-emerald-900 hover:text-emerald-300 transition-all rounded">Set 1</button>
-              <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 2</button>
-              <button onClick={() => answerExam(false)} className="flex-1 py-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-rose-900 hover:text-rose-300 transition-all rounded">Set 9</button>
+            {/* Numbering format requested by user: Question 1/20: ... */}
+            <p className="text-white text-[12px] mb-3 px-4">
+              <span className="text-violet-400 font-bold mr-2">Question {examIndex + 1}/20:</span>
+              {q.text}
+            </p>
+            <div className="grid grid-cols-2 gap-2 justify-center text-[10px] font-mono mt-4">
+              {q.options.map((opt: any, i: number) => (
+                <button 
+                  key={i} 
+                  onClick={() => answerExam(opt.correct, examIndex === EXAM_QUESTIONS.length - 1)} 
+                  className="py-2 px-2 bg-slate-900 border border-slate-700 text-slate-300 hover:bg-violet-900 hover:text-violet-300 transition-all rounded break-words"
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         )}
-        {examState === 'fail' && (
-          <div className="text-center animate-micro-screen-shake">
-            <div className="text-rose-500 font-bold text-lg mb-1">SYSTEM FAILURE</div>
-            <p className="text-rose-300 text-[10px] mb-3">Incorrect or out of time. A 4-Way cache with 16 slots has 4 Sets. Block 9 mod 4 = Set 1.</p>
-            <button onClick={() => setExamState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Retake Exam</button>
+        {examState === 'success' && (
+          <div className="text-emerald-400 font-mono text-[10px] animate-pulse py-4">
+            <div className="text-xl mb-1">TURING TEST PASSED</div>
+            <div className="text-sm text-emerald-300 mb-2">Final Result: 20 / 20 Correct</div>
+            <div>+300 TOTAL XP GRANTED</div>
           </div>
         )}
-        {examState === 'success' && (
-          <div className="text-center">
-            <div className="text-emerald-500 font-bold text-lg mb-1">CERTIFIED CONTROLLER</div>
-            <p className="text-emerald-300 text-[10px] mb-3">Perfect execution under pressure. 9 mod 4 = Set 1. +50 XP Awarded.</p>
-            <button onClick={() => setExamState('idle')} className="text-[10px] font-mono text-slate-500 hover:text-slate-300 underline">Reset</button>
+        {examState === 'fail' && (
+          <div className="text-rose-500 font-mono text-[10px] py-2">
+            <div className="text-xl mb-1">SYSTEM OVERLOAD</div>
+            <div className="text-sm text-rose-300 mb-2">Failed at Question {examIndex + 1}</div>
+            <div>INCORRECT ANSWER OR TIMEOUT</div>
+            <button onClick={() => setExamState('idle')} className="mt-4 px-3 py-2 bg-rose-900/50 border border-rose-500 text-rose-300 rounded hover:bg-rose-500 hover:text-white transition-colors">RETRY EXAM</button>
           </div>
         )}
       </div>
