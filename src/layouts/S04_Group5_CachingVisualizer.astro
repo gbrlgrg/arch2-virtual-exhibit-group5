@@ -25,6 +25,9 @@ import { Icon } from 'astro-icon/components';
 
 const baseUrl = import.meta.env.BASE_URL;
 
+// Parse semicolon-separated author names into an array
+const authorNames = author ? author.split(';').map((name: string) => name.trim()).filter(Boolean) : [];
+
 const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.depth <= 3) ?? [];
 ---
 
@@ -46,10 +49,19 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
       <div class="cv-hero__glow cv-hero__glow--indigo" aria-hidden="true"></div>
 
       <div class="cv-hero__content">
-        <a href={baseUrl} class="cv-hero__back">
-          <Icon name="ic:round-home" width="18" height="18" />
-          <span>Exhibit Hub</span>
-        </a>
+        <div class="cv-hero__topbar">
+          <a href={baseUrl} class="cv-hero__back">
+            <Icon name="ic:round-home" width="18" height="18" />
+            <span>Exhibit Hub</span>
+          </a>
+
+          {readingTime && (
+            <span class="cv-hero__reading-time">
+              <Icon name="ic:round-schedule" width="14" height="14" />
+              {readingTime}
+            </span>
+          )}
+        </div>
 
         <p class="cv-hero__eyebrow">
           <span class="cv-hero__eyebrow-dot"></span>
@@ -60,10 +72,20 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
           <span class="cv-hero__title-main" set:html={title} />
         </h1>
 
-        <p class="cv-hero__author">
-          <Icon name="ic:round-person" width="15" height="15" />
-          {author}
-        </p>
+        <div class="cv-hero__authors">
+          <span class="cv-hero__authors-label">
+            <Icon name="ic:round-group" width="16" height="16" />
+            Group Members
+          </span>
+          <div class="cv-hero__authors-list">
+            {authorNames.map((name: string) => (
+              <span class="cv-hero__author-chip">
+                <Icon name="ic:round-person" width="13" height="13" />
+                {name}
+              </span>
+            ))}
+          </div>
+        </div>
 
       </div>
     </header>
@@ -146,6 +168,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     flex-direction: column;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   /* ================================================================
@@ -157,7 +180,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     display: flex;
     align-items: flex-start;
     min-height: auto;
-    padding: 0.75rem 2rem 0.5rem;
+    padding: 2rem 2.5rem 1.75rem;
     background: var(--cv-bg-deep);
   }
 
@@ -238,7 +261,6 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     border: 1px solid rgba(148,163,184,0.2);
     border-radius: 9999px;
     transition: color 0.2s, border-color 0.2s, background 0.2s;
-    margin-bottom: 0.6rem;
   }
   .cv-hero__back:hover {
     color: var(--cv-accent-cyan);
@@ -300,14 +322,78 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     100% { background-position: 0% 50%; }
   }
 
-  /* Author */
-  .cv-hero__author {
+  /* Topbar — home button + reading time side by side */
+  .cv-hero__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Reading time badge */
+  .cv-hero__reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--cv-font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--cv-accent-emerald);
+    padding: 0.3rem 0.75rem;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    border-radius: 9999px;
+    background: rgba(52, 211, 153, 0.08);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .cv-hero__reading-time:hover {
+    border-color: rgba(52, 211, 153, 0.5);
+    background: rgba(52, 211, 153, 0.12);
+  }
+
+  /* Authors section */
+  .cv-hero__authors {
+    margin-top: 1rem;
+  }
+
+  .cv-hero__authors-label {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.8rem;
+    font-family: var(--cv-font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cv-text-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  .cv-hero__authors-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .cv-hero__author-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 500;
     color: #cbd5e1;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 9999px;
+    background: rgba(148, 163, 184, 0.06);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
     letter-spacing: 0.01em;
+  }
+  .cv-hero__author-chip:hover {
+    color: #e2e8f0;
+    border-color: rgba(129, 140, 248, 0.4);
+    background: rgba(129, 140, 248, 0.08);
   }
 
   /* ================================================================
@@ -325,12 +411,18 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
 
   .cv-nav__rail {
     display: flex;
-    gap: 0.6rem;
+    gap: 0.5rem;
     max-width: 100%;
     margin: 0 auto;
     padding: 0.6rem 2rem;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cv-nav__rail::-webkit-scrollbar {
+    display: none;
   }
 
   .cv-nav__link {
@@ -345,7 +437,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     border-radius: 8px;
     border: 1px solid rgba(99, 102, 241, 0.35);
     background: rgba(99, 102, 241, 0.1);
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     white-space: nowrap;
   }
 
@@ -353,6 +445,13 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     color: #ffffff;
     background: rgba(99, 102, 241, 0.25);
     border-color: rgba(129, 140, 248, 0.6);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .cv-nav__link:active {
+    transform: translateY(0);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
   }
 
   .cv-nav__link--sub {
@@ -366,6 +465,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     color: #e2e8f0;
     background: rgba(148, 163, 184, 0.12);
     border-color: rgba(148, 163, 184, 0.35);
+    box-shadow: 0 0 12px rgba(148, 163, 184, 0.15);
   }
 
   /* ================================================================
@@ -619,11 +719,20 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
      ================================================================ */
   @media (max-width: 768px) {
     .cv-hero {
-      padding: 1rem 1.25rem 0.5rem;
+      padding: 1.25rem 1.25rem 1rem;
+    }
+
+    .cv-hero__topbar {
+      flex-wrap: wrap;
     }
 
     .cv-hero__title {
       font-size: clamp(1.6rem, 7vw, 2.2rem);
+    }
+
+    .cv-hero__author-chip {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.55rem;
     }
 
     .cv-nav__rail {
@@ -670,11 +779,20 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
 
   @media (max-width: 480px) {
     .cv-hero {
-      padding: 0.75rem 1rem 0.4rem;
+      padding: 1rem 1rem 0.75rem;
     }
 
     .cv-hero__title {
       font-size: 1.5rem;
+    }
+
+    .cv-hero__authors-list {
+      gap: 0.3rem;
+    }
+
+    .cv-hero__author-chip {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
     }
 
     .cv-main {
