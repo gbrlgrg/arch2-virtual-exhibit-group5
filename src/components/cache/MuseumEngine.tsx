@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 import { SimulatorControls } from './simulator-controls'
 import { Visualizer, type SimState } from './visualizer'
 import {
@@ -12,6 +12,13 @@ import {
   MemoryStick, ChevronRight, Zap, GraduationCap, Cpu, Layers,
   BookOpen, FlaskConical, BarChart3
 } from 'lucide-react'
+import { useUISound } from '../../lib/useUISound'
+import { useHackerMode, toHexDump } from '../../lib/useHackerMode'
+import { useMiniGames } from '../../lib/useMiniGames'
+import { OverclockSurge, ThrashingNightmare, TrolleyMiniGame, PowerOutageMiniGame, ControllerExamMiniGame } from './MiniGames'
+import { NumberRoller } from './NumberRoller'
+import { GlobalTelemetryConsole, LiveBandwidthMonitor } from './Telemetry'
+import { Scoreboard, getCurrentRank } from './Scoreboard'
 
 type ForceMode = 'auto' | 'hit' | 'miss'
 type ReplacementAlgo = 'lru' | 'mru' | 'fifo' | 'random'
@@ -67,6 +74,13 @@ export default function MuseumEngine() {
   const [cache, setCache] = useState<CacheRow[]>(() => createEmptyCache())
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('architecture')
+  const [speedMultiplier, setSpeedMultiplier] = useState(1)
+  const [consecutiveHits, setConsecutiveHits] = useState(0)
+  const [optimizationCount, setOptimizationCount] = useState(0)
+  const { playHit, playMiss, playGlitch, playOptimize, playComboHit, playComboBreak, startFlowStateSynth, stopFlowStateSynth } = useUISound()
+  const { hackerMode, isGlitching, toggleHackerMode } = useHackerMode(playGlitch)
+  const [accessHistory, setAccessHistory] = useState<{tag: number, index: number}[]>([])
+  const [isThrashing, setIsThrashing] = useState(false)
 
   // Running scoreboard
   const [hits, setHits] = useState(0)
@@ -79,7 +93,31 @@ export default function MuseumEngine() {
   // Flash state
   const [triggered, setTriggered] = useState(false)
 
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  
+  const [xp, setXp] = useState(0)
+  const [timeSaved, setTimeSaved] = useState(0)
+  const [isLevelingUp, setIsLevelingUp] = useState(false)
+  const [isShaking, setIsShaking] = useState(false)
+
+  const defragmentCache = () => {
+    setOptimizationCount(c => c + 1)
+    setXp(x => x + 10)
+    playOptimize()
+  }
+
+  // Ranking: detect level-up when XP crosses a rank threshold
+  const prevRankRef = useRef(getCurrentRank(0).current.title)
+  useEffect(() => {
+    const { current } = getCurrentRank(xp)
+    if (current.title !== prevRankRef.current) {
+      prevRankRef.current = current.title
+      setIsLevelingUp(true)
+      playGlitch()
+      setTimeout(() => setIsLevelingUp(false), 3000)
+    }
+  }, [xp, playGlitch])
+
+const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const simulatorRef = useRef<HTMLDivElement>(null)
 
   const handleFetch = useCallback(
@@ -97,36 +135,86 @@ export default function MuseumEngine() {
       // Let the breakdown animation finish (2000ms) before starting the visualizer
       const tCalc = setTimeout(() => {
         setSimState('calculating')
-      }, 2000)
+      }, 2000 / speedMultiplier)
 
       const tResult = setTimeout(() => {
         setCache((currentCache) => {
           const result = lookup(currentCache, parsed, effectiveForce)
           setLatency(result.latency)
           setSimState(result.outcome)
-          if (result.outcome === 'hit') setHits(h => h + 1)
-          else if (result.outcome === 'miss') setMisses(m => m + 1)
+          if (result.outcome === 'hit') {
+            const nextCombo = consecutiveHits + 1;
+            if (nextCombo > 1) playComboHit(nextCombo);
+            else playHit();
+            
+            if (nextCombo === 5) startFlowStateSynth();
+            
+            setHits(h => h + 1)
+            setConsecutiveHits(nextCombo)
+          } else if (result.outcome === 'miss') {
+            if (consecutiveHits >= 3) {
+              playComboBreak();
+              stopFlowStateSynth();
+            } else {
+              playMiss();
+            }
+            
+            setMisses(m => m + 1)
+            setConsecutiveHits(0)
+          }
+          
+          setAccessHistory(prev => {
+            const newHist = [...prev, { tag: parsed.tag, index: parsed.index }].slice(-4);
+            if (newHist.length === 4) {
+              const allSameIndex = newHist.every(h => h.index === newHist[0].index);
+              const tagsAlternate = newHist[0].tag === newHist[2].tag && newHist[1].tag === newHist[3].tag && newHist[0].tag !== newHist[1].tag;
+              if (allSameIndex && tagsAlternate) {
+                setIsThrashing(true);
+                playGlitch();
+                setTimeout(() => setIsThrashing(false), 3000 / speedMultiplier);
+              }
+            }
+            return newHist;
+          });
+
           return result.cache
         })
-      }, 3200)
+      }, 3200 / speedMultiplier)
       timersRef.current.push(tCalc, tResult)
     },
-    [forceMode],
+    [forceMode, speedMultiplier],
   )
 
   const triggerSimulation = (address: string, fm?: ForceMode) => {
     setTriggered(true)
-    setTimeout(() => setTriggered(false), 1800)
+    setTimeout(() => setTriggered(false), 1800 / speedMultiplier)
     if (fm) setForceMode(fm)
 
     // Scroll to the simulator panel
     simulatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-    setTimeout(() => { handleFetch(address, fm) }, 300)
+    setTimeout(() => { handleFetch(address, fm) }, 300 / speedMultiplier)
   }
 
   const totalOps = hits + misses
   const hitRate = totalOps > 0 ? ((hits / totalOps) * 100).toFixed(1) : '—'
+
+  
+  const hitRateNum = totalOps > 0 ? (hits / totalOps) * 100 : null;
+
+  let ambientClasses = "bg-slate-950/40 shadow-[0_0_50px_rgba(34,211,238,0.15)] border-slate-700/50";
+  if (isGlitching) {
+    ambientClasses = "glitch-overlay";
+  } else if (hackerMode) {
+    ambientClasses = "hacker-mode hacker-crt";
+  } else if (consecutiveHits >= 5) {
+    ambientClasses = "bg-blue-950/80 shadow-[inset_0_0_150px_rgba(37,99,235,0.4)] border-blue-400 border-2 scale-[1.01] transition-all duration-300";
+  } else if (speedMultiplier < 1) {
+    ambientClasses = "bg-blue-950/60 shadow-[inset_0_0_100px_rgba(59,130,246,0.3)] border-blue-500/50";
+  } else if (hitRateNum !== null) {
+    if (hitRateNum >= 80) ambientClasses = "bg-cyan-950/40 shadow-[inset_0_0_100px_rgba(34,211,238,0.2)] border-cyan-500/50";
+    else if (hitRateNum <= 30) ambientClasses = "bg-rose-950/40 shadow-[inset_0_0_100px_rgba(244,63,94,0.2)] border-rose-500/50";
+  }
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode; color: 'indigo'|'cyan'|'emerald'|'amber'|'violet' }[] = [
     { id: 'architecture', label: '1. Architecture',       icon: <Cpu className="size-4" />,        color: 'indigo'  },
@@ -153,8 +241,21 @@ export default function MuseumEngine() {
     canon:         'Live Telemetry',
   }
 
+  const miniGames = useMiniGames({
+    setHits, 
+    setMisses, 
+    playHit, 
+    playMiss, 
+    setIsShaking, 
+    setSimState, 
+    setXp, 
+    triggerSimulation
+  })
+
   return (
-    <div className="flex flex-col lg:flex-row w-full min-h-[750px] bg-slate-950/40 backdrop-blur-3xl text-slate-100 rounded-2xl border border-slate-700/50 ring-1 ring-white/10 ring-inset overflow-hidden font-sans shadow-[0_0_50px_rgba(34,211,238,0.15)] my-6">
+    <div className={`relative flex flex-col lg:flex-row w-full min-h-[750px] backdrop-blur-3xl text-slate-100 rounded-2xl border ring-1 ring-white/10 ring-inset overflow-hidden font-sans my-6 transition-all duration-1000  ${ambientClasses}`}>
+      {/* DOPAMINE MESH BACKGROUND */}
+      {!hackerMode && <div className="dopamine-mesh"></div>}
 
       {/* ═══════════════════════════════════════════════════════════ */}
       {/* LEFT PANEL: EXHIBIT GUIDE                                  */}
@@ -162,7 +263,17 @@ export default function MuseumEngine() {
       <div className="w-full lg:w-[42%] flex flex-col border-b lg:border-b-0 lg:border-r border-slate-700/50 bg-slate-900/60 backdrop-blur-xl">
 
         {/* Header */}
-        <header className="px-5 py-5 border-b border-slate-800/60 shrink-0">
+        <header className="px-5 py-5 border-b border-slate-800/60 shrink-0 relative overflow-hidden">
+          {/* THE MATRIX / HACKER OVERRIDE TOGGLE */}
+          <div className="absolute top-2 right-2 z-50">
+            <button 
+              onClick={toggleHackerMode}
+              className={`px-3 py-1 font-mono text-[9px] uppercase font-bold border transition-all ${hackerMode ? 'bg-green-900/50 text-green-400 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-slate-900/50 text-slate-600 border-slate-800 hover:text-slate-400'}`}
+            >
+              [ OVERRIDE_MODE ]
+            </button>
+          </div>
+          
           <div className="text-cyan-400 font-mono text-[9px] font-semibold tracking-[0.25em] uppercase mb-1.5 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]"></span>
             CSARCH2 · Group 5 · Interactive Exhibit
@@ -170,7 +281,7 @@ export default function MuseumEngine() {
           <div className="flex items-center gap-2">
             <GraduationCap className="size-5 text-indigo-400 shrink-0" />
             <h3 className="text-lg font-bold tracking-tight text-white leading-tight">
-              Ca-Ching! — Cache Memory Guide
+              {hackerMode ? toHexDump('Ca-Ching!') : 'Ca-Ching! — Cache Memory Guide'}
             </h3>
           </div>
         </header>
@@ -181,7 +292,7 @@ export default function MuseumEngine() {
             <TabButton
               key={t.id}
               id={t.id}
-              label={t.label}
+              label={hackerMode ? toHexDump(t.label) : t.label}
               icon={t.icon}
               active={activeTab === t.id}
               onClick={() => setActiveTab(t.id)}
@@ -817,29 +928,90 @@ export default function MuseumEngine() {
 
         {/* Scoreboard — only meaningful while the address-lookup simulator (architecture tab) is active */}
         {activeTab === 'architecture' && (
-          <div className="relative w-full flex items-center gap-3">
-            <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between">
-              <div>
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
-                <div className="text-2xl font-bold text-emerald-400">{hits}</div>
+          <div className="relative w-full flex flex-col items-center gap-3 z-10">
+            <Scoreboard xp={xp} timeSaved={timeSaved} isLevelingUp={isLevelingUp} />
+            {/* BULLET TIME / GOD MODE SLIDER */}
+            <div className="w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-1">Time Dilation Engine</span>
+                <span className={speedMultiplier < 1 ? "text-blue-400 font-bold" : "text-slate-300 font-bold"}>
+                  {speedMultiplier === 1 ? 'REALTIME' : 'BULLET TIME (' + speedMultiplier + 'x)'}
+                </span>
               </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
-                <div className="text-2xl font-bold text-amber-400">{misses}</div>
+              <div className="flex-1 max-w-[200px] mx-4">
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1" 
+                  step="0.1" 
+                  value={speedMultiplier}
+                  onChange={(e) => setSpeedMultiplier(parseFloat(e.target.value))}
+                  className="w-full accent-blue-500 cursor-pointer"
+                />
               </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
-                <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
-                  {hitRate}{totalOps > 0 ? '%' : ''}
+              <button 
+                onClick={() => setSpeedMultiplier(speedMultiplier === 1 ? 0.1 : 1)}
+                className={`px-3 py-1 rounded text-xs font-mono font-bold uppercase transition-colors ${speedMultiplier < 1 ? 'bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+              >
+                {speedMultiplier === 1 ? 'GOD MODE' : 'RESET'}
+              </button>
+            </div>
+
+            <div className="w-full flex flex-col gap-3">
+              <div className="relative w-full flex items-center gap-3">
+                <div className={`flex-1 bg-slate-900/90 backdrop-blur-xl border ${consecutiveHits >= 3 ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'border-slate-800'} rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-300`}>
+                  <div>
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Hits</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-2xl font-bold text-emerald-400"><NumberRoller value={hits} /></div>
+                      {consecutiveHits > 1 && (
+                        <div className="animate-pulse bg-blue-500/20 text-blue-400 border border-blue-500/50 px-2 py-0.5 rounded text-[10px] font-bold font-mono">
+                          x{consecutiveHits} COMBO
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Session Misses</div>
+                    <div className="text-2xl font-bold text-amber-400"><NumberRoller value={misses} /></div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 mb-0.5">Hit Rate</div>
+                    <div className={['text-2xl font-bold', totalOps === 0 ? 'text-slate-500' : parseFloat(hitRate) >= 70 ? 'text-emerald-400' : parseFloat(hitRate) >= 40 ? 'text-amber-400' : 'text-rose-400'].join(' ')}>
+                      {totalOps > 0 ? <NumberRoller value={parseFloat(hitRate)} isFloat /> : hitRate}{totalOps > 0 ? '%' : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 h-full">
+                  <button
+                    onClick={() => { playOptimize(); setOptimizationCount(c => c + 1); }}
+                    className="flex-1 shrink-0 px-3 py-1 bg-slate-900/90 backdrop-blur-xl border border-cyan-800/80 rounded-xl text-[10px] text-cyan-400 font-bold hover:bg-cyan-900/50 hover:text-cyan-300 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all font-mono uppercase"
+                  >
+                    Optimize
+                  </button>
+                  <button
+                    onClick={() => { setHits(0); setMisses(0); setConsecutiveHits(0); }}
+                    className="flex-1 shrink-0 px-3 py-1 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
+
+              {/* WASTED LIFETIMES DASHBOARD */}
+              {totalOps > 0 && (
+                <div className="w-full bg-slate-950/80 backdrop-blur-xl border border-slate-800/80 rounded-xl px-4 py-3 flex items-center justify-between text-xs font-mono shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                  <div className="flex flex-col">
+                    <span className="text-emerald-400 font-bold tracking-tight">Time Saved (Hits): {(hits * 98).toLocaleString()} ns</span>
+                    <span className="text-slate-500 text-[9px] italic mt-0.5">Saved CPU from staring at wall for {(hits * 98 * 11 / 365).toFixed(1)} years</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-rose-400 font-bold tracking-tight">Time Wasted (Misses): {(misses * 100).toLocaleString()} ns</span>
+                    <span className="text-slate-500 text-[9px] italic mt-0.5">CPU was agonizing for {(misses * 100 * 11 / 365).toFixed(1)} years</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => { setHits(0); setMisses(0) }}
-              className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
-            >
-              Reset
-            </button>
           </div>
         )}
 
@@ -853,7 +1025,7 @@ export default function MuseumEngine() {
                 <span className="flex size-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   <MemoryStick className="size-4" />
                 </span>
-                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">{simulatorTitleMap[activeTab]}</span>
+                <span className="font-mono text-xs uppercase tracking-widest text-cyan-400 font-semibold">{hackerMode ? toHexDump(simulatorTitleMap[activeTab]) : simulatorTitleMap[activeTab]}</span>
               </div>
               <div className="flex items-center gap-2">
                 {activeTab === 'replacement' && (
@@ -887,23 +1059,41 @@ export default function MuseumEngine() {
                   activeIndex={activeIndex}
                   replacementAlgo={replacementAlgo}
                 />
+                <OverclockSurge isOverclocking={miniGames.isOverclocking} handleOverclock={miniGames.handleOverclock} />
+                <LiveBandwidthMonitor simState={simState} />
               </>
             )}
 
-            {activeTab === 'mapping' && <MappingSimulator />}
-
-            {activeTab === 'replacement' && (
-              <ReplacementSimulator algo={replacementAlgo} onAlgoChange={setReplacementAlgo} />
+            {activeTab === 'mapping' && (
+              <>
+                <MappingSimulator />
+                <ThrashingNightmare thrashState={miniGames.thrashState} setThrashState={miniGames.setThrashState} thrashCount={miniGames.thrashCount} setThrashCount={miniGames.setThrashCount} triggerSimulation={triggerSimulation} />
+              </>
             )}
 
-            {activeTab === 'writepolicies' && <WritePolicySimulator />}
+            {activeTab === 'replacement' && (
+              <>
+                <ReplacementSimulator algo={replacementAlgo} onAlgoChange={setReplacementAlgo} />
+                <TrolleyMiniGame trolleyState={miniGames.trolleyState} setTrolleyState={miniGames.setTrolleyState} />
+              </>
+            )}
+
+            {activeTab === 'writepolicies' && (
+              <>
+                <WritePolicySimulator />
+                <PowerOutageMiniGame powerState={miniGames.powerState} setPowerState={miniGames.setPowerState} />
+              </>
+            )}
 
             {activeTab === 'canon' && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-                <div className="text-slate-500 text-[11px] font-mono">
-                  This tab is reference-only — no live simulator.
+              <>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
+                  <div className="text-slate-500 text-[11px] font-mono">
+                    This tab is reference-only — no live simulator.
+                  </div>
                 </div>
-              </div>
+                <ControllerExamMiniGame examState={miniGames.examState} setExamState={miniGames.setExamState} examTime={miniGames.examTime} startExam={miniGames.startExam} answerExam={miniGames.answerExam} />
+              </>
             )}
           </div>
         </div>

@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback } from 'react'
-import Particles from 'react-tsparticles'
-import { loadSlim } from 'tsparticles-slim'
-import type { Engine, Container, ISourceOptions } from 'tsparticles-engine'
+import Particles from '@tsparticles/react'
+import { loadSlim } from '@tsparticles/slim'
+import type { Engine, Container, ISourceOptions } from '@tsparticles/engine'
 import type { SimState } from './visualizer'
 
 type ParticleStreamProps = {
@@ -203,8 +203,8 @@ export function ParticleStream({ state, burstKey }: ParticleStreamProps) {
       className="absolute inset-0 pointer-events-none z-10"
       style={{ width: '100%', height: '100%' }}
       options={config}
-      init={particlesInit}
-      loaded={particlesLoaded}
+      
+      
     />
   )
 }

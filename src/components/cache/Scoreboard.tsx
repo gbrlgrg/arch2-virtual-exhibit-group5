@@ -53,6 +53,29 @@ export function Scoreboard({ xp, timeSaved, isLevelingUp }: ScoreboardProps) {
       {/* Dynamic background glow on level up */}
       <div className={`absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/10 to-amber-500/0 transition-opacity duration-700 ${isLevelingUp ? 'opacity-100' : 'opacity-0'}`} />
 
+      {/* Level-up particle burst */}
+      {isLevelingUp && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 overflow-hidden">
+          {/* Expanding rings */}
+          <div className="absolute animate-level-up-ring rounded-full border-2 border-amber-400/60 size-16" />
+          <div className="absolute animate-level-up-ring rounded-full border-2 border-amber-400/40 size-24" style={{ animationDelay: '0.1s' }} />
+          <div className="absolute animate-level-up-ring rounded-full border-2 border-amber-400/20 size-36" style={{ animationDelay: '0.2s' }} />
+          {/* Sparkle dots */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute size-1.5 rounded-full bg-amber-400 animate-level-up-sparkle"
+              style={{
+                animationDelay: `${i * 0.08}s`,
+                transform: `rotate(${i * 30}deg) translateY(-30px)`,
+              }}
+            />
+          ))}
+          {/* Central flash */}
+          <div className="absolute animate-level-up-flash rounded-full bg-amber-400/40 size-8" />
+        </div>
+      )}
+
       {/* Rank & XP */}
       <div className="flex flex-col gap-2 z-10 w-[45%]">
         <div className="flex items-center gap-2">

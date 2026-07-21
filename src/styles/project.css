@@ -1869,3 +1869,139 @@ a:not(.cache-simulator *):not(.cache-simulator) {
 .animate-blob-orbit {
   animation: blob-orbit 20s linear infinite;
 }
+
+@keyframes heatmap-fade {
+  0% { background-color: white; opacity: 1; box-shadow: 0 0 20px white; }
+  20% { background-color: #22d3ee; opacity: 0.8; box-shadow: 0 0 15px #22d3ee; }
+  100% { background-color: transparent; opacity: 0; box-shadow: 0 0 0px transparent; }
+}
+.animate-heatmap {
+  animation: heatmap-fade 3s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes klaxon-flash {
+  0%, 100% { background-color: rgba(159, 18, 57, 0.1); border-color: rgba(225, 29, 72, 0.3); }
+  50% { background-color: rgba(225, 29, 72, 0.3); border-color: rgba(244, 63, 94, 0.8); box-shadow: inset 0 0 100px rgba(225,29,72,0.5); }
+}
+.animate-klaxon {
+  animation: klaxon-flash 0.5s ease-in-out infinite;
+}
+
+@keyframes photon-down-slow {
+  0% { transform: translateY(0); filter: brightness(1.5); }
+  50% { filter: brightness(0.8); }
+  100% { transform: translateY(80px); filter: brightness(0.5); opacity: 0; }
+}
+
+/* --- HACKER CRT OVERRIDE --- */
+.hacker-crt {
+  background-color: #050505 !important;
+  color: #22c55e !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  text-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
+  position: relative;
+}
+
+.hacker-crt::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 2;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+.hacker-crt::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: rgba(34, 197, 94, 0.03);
+  opacity: 0;
+  z-index: 2;
+  pointer-events: none;
+  animation: crt-flicker 0.15s infinite;
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 0.01; }
+  50% { opacity: 0.04; }
+  100% { opacity: 0.01; }
+}
+
+.glitch-overlay {
+  animation: glitch-anim 0.4s cubic-bezier(.25, .46, .45, .94) both infinite;
+  background: #000;
+  z-index: 9999;
+}
+
+@keyframes glitch-anim {
+  0% { transform: translate(0) }
+  20% { transform: translate(-5px, 5px) }
+  40% { transform: translate(-5px, -5px) }
+  60% { transform: translate(5px, 5px) }
+  80% { transform: translate(5px, -5px) }
+  100% { transform: translate(0) }
+}
+
+/* --- DOPAMINE MESH GRADIENT --- */
+.dopamine-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(244, 63, 94, 0.15) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-shift 15s ease infinite alternate;
+  mix-blend-mode: screen;
+}
+
+@keyframes mesh-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 50% 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEVEL-UP PARTICLE BURST SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes level-up-ring {
+  0% { transform: scale(0); opacity: 1; }
+  60% { opacity: 0.6; }
+  100% { transform: scale(3); opacity: 0; }
+}
+.animate-level-up-ring {
+  animation: level-up-ring 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes level-up-sparkle {
+  0% { opacity: 1; transform: rotate(var(--tw-rotate, 0deg)) translateY(-10px) scale(1); }
+  50% { opacity: 1; transform: rotate(var(--tw-rotate, 0deg)) translateY(-50px) scale(1.5); }
+  100% { opacity: 0; transform: rotate(var(--tw-rotate, 0deg)) translateY(-70px) scale(0); }
+}
+.animate-level-up-sparkle {
+  animation: level-up-sparkle 1s ease-out forwards;
+}
+
+@keyframes level-up-flash {
+  0% { transform: scale(0); opacity: 1; }
+  30% { transform: scale(2); opacity: 0.8; }
+  100% { transform: scale(4); opacity: 0; }
+}
+.animate-level-up-flash {
+  animation: level-up-flash 0.8s ease-out forwards;
+}
+
+@keyframes xp-float {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+.animate-xp-float {
+  animation: xp-float 1.5s ease-out forwards;
+}

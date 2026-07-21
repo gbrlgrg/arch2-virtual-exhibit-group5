@@ -5,14 +5,15 @@ type ConduitType = 'cpu-cache' | 'cache-ram'
 type AnimatedConduitProps = {
   type: ConduitType
   state: SimState
+  isDirtyFlush?: boolean
 }
 
-export function AnimatedConduit({ type, state }: AnimatedConduitProps) {
+export function AnimatedConduit({ type, state, isDirtyFlush = false }: AnimatedConduitProps) {
   // Determine if the pipe should be active/glowing based on state and type
   const isActive = 
     type === 'cpu-cache' 
       ? (state === 'calculating' || state === 'hit' || state === 'miss') 
-      : state === 'miss'
+      : (state === 'miss' || isDirtyFlush)
 
   // Determine colors based on state
   const isHit = state === 'hit'
@@ -32,6 +33,10 @@ export function AnimatedConduit({ type, state }: AnimatedConduitProps) {
       pipeGlow = 'border-amber-500/50 bg-amber-500/10 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
       label = 'BOTTLENECK'
       labelColor = 'text-amber-400'
+    } else if (isDirtyFlush && type === 'cache-ram') {
+      pipeGlow = 'border-rose-500/60 bg-rose-500/20 shadow-[0_0_20px_rgba(225,29,72,0.4)]'
+      label = 'DIRTY FLUSH LOCKDOWN'
+      labelColor = 'text-rose-400'
     } else if (isMiss && type === 'cache-ram') {
       pipeGlow = 'border-amber-500/60 bg-amber-500/20 shadow-[0_0_20px_rgba(245,158,11,0.4)]'
       label = 'MEMORY WALL DELAY'
@@ -49,21 +54,39 @@ export function AnimatedConduit({ type, state }: AnimatedConduitProps) {
       {/* The Pipe */}
       <div className={`relative w-3 h-full border-x transition-all duration-500 overflow-hidden ${pipeGlow}`}>
         
-        {/* The Photon (Light Pulse) */}
-        {isActive && (
-          <div
-            className={`absolute left-0 right-0 h-8 rounded-full blur-[2px] -top-8 ${
-              isCalc && type === 'cpu-cache' 
-                ? 'bg-cyan-300 shadow-[0_0_15px_rgba(103,232,249,1)] animate-photon-down-fast' 
-                : isHit && type === 'cpu-cache'
-                ? 'bg-emerald-300 shadow-[0_0_15px_rgba(110,231,183,1)] animate-photon-up-fast'
-                : isMiss && type === 'cache-ram'
-                ? 'bg-amber-400 shadow-[0_0_20px_rgba(251,191,36,1)] animate-photon-up-slow'
-                : isMiss && type === 'cpu-cache'
-                ? 'bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,1)] animate-photon-up-slow-delay' // Waits for RAM to finish
-                : ''
-            }`}
-          />
+        {/* Dirty Flush Dragdown */}
+        {isDirtyFlush && type === 'cache-ram' && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="w-full h-full bg-rose-500/20 shadow-[inset_0_0_20px_rgba(225,29,72,0.5)] animate-pulse border-x border-rose-500/50" />
+            <div className="w-3 h-4 bg-rose-600 rounded-sm shadow-[0_0_15px_rgba(225,29,72,1)] absolute -top-4 animate-[photon-down-slow_2s_cubic-bezier(0.65,0,0.35,1)_forwards]" />
+          </div>
+        )}
+
+        {/* The Photon (Light Pulse) or Pneumatic Assembly */}
+        {isActive && !isDirtyFlush && (
+          isMiss && type === 'cache-ram' ? (
+            <div className="absolute inset-0 flex flex-col justify-end items-center pointer-events-none">
+              {[0, 1, 2, 3].map(i => (
+                <div 
+                  key={i} 
+                  className="w-2.5 h-2.5 bg-amber-300 rounded-sm shadow-[0_0_15px_rgba(251,191,36,1)] absolute -bottom-4 animate-photon-up-slow"
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div
+              className={`absolute left-0 right-0 h-8 rounded-full blur-[2px] -top-8 ${
+                isCalc && type === 'cpu-cache' 
+                  ? 'bg-cyan-300 shadow-[0_0_15px_rgba(103,232,249,1)] animate-photon-down-fast' 
+                  : isHit && type === 'cpu-cache'
+                  ? 'bg-emerald-300 shadow-[0_0_15px_rgba(110,231,183,1)] animate-photon-up-fast'
+                  : isMiss && type === 'cpu-cache'
+                  ? 'bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,1)] animate-photon-up-slow-delay'
+                  : ''
+              }`}
+            />
+          )
         )}
       </div>
 
