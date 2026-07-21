@@ -41,6 +41,9 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
   </head>
 
   <body class="cv-root">
+    <!-- ─── MATRIX RAIN BACKGROUND ─────────────────────────────── -->
+    <canvas id="cv-matrix-canvas" class="cv-matrix-canvas" aria-hidden="true"></canvas>
+    <div class="cv-matrix-vignette" aria-hidden="true"></div>
     <!-- ─── HERO ──────────────────────────────────────────────── -->
     <header class="cv-hero">
       <div class="cv-hero__mesh" aria-hidden="true"></div>
@@ -58,7 +61,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
           {readingTime && (
             <span class="cv-hero__reading-time">
               <Icon name="ic:round-schedule" width="14" height="14" />
-              {readingTime}
+              Reading Time: {readingTime}
             </span>
           )}
         </div>
@@ -169,6 +172,36 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+    position: relative;
+  }
+
+  /* ================================================================
+     MATRIX RAIN BACKGROUND
+     ================================================================ */
+  .cv-matrix-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.30;
+  }
+
+  .cv-matrix-vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 85% 75% at 50% 50%,
+      transparent 40%,
+      rgba(6, 8, 15, 0.70) 100%
+    );
   }
 
   /* ================================================================
@@ -182,6 +215,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     min-height: auto;
     padding: 2rem 2.5rem 1.75rem;
     background: var(--cv-bg-deep);
+    z-index: 1;
   }
 
   /* Animated gradient mesh background */
@@ -403,7 +437,7 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(10, 14, 30, 0.92);
+    background: rgba(10, 14, 30, 0.95);
     backdrop-filter: blur(16px) saturate(1.4);
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
     border-bottom: 1px solid rgba(99, 102, 241, 0.2);
@@ -441,6 +475,11 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     white-space: nowrap;
   }
 
+  .cv-nav__link:visited {
+    color: #e2e8f0;
+    text-decoration: none;
+  }
+
   .cv-nav__link:hover {
     color: #ffffff;
     background: rgba(99, 102, 241, 0.25);
@@ -467,6 +506,10 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     border-color: rgba(148, 163, 184, 0.35);
     box-shadow: 0 0 12px rgba(148, 163, 184, 0.15);
   }
+  .cv-nav__link--sub:visited {
+    color: #94a3b8;
+    text-decoration: none;
+  }
 
   /* ================================================================
      MAIN CONTENT
@@ -475,6 +518,8 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     flex: 1;
     width: 100%;
     padding: 3rem 4rem 5rem;
+    position: relative;
+    z-index: 1;
   }
 
   .cv-article {
@@ -637,6 +682,8 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
      ================================================================ */
   .cv-footer {
     padding: 0 4rem 3rem;
+    position: relative;
+    z-index: 1;
   }
 
   .cv-footer__rule {
@@ -817,3 +864,83 @@ const navItems = headings?.filter((h: { depth: number }) => h.depth >= 2 && h.de
     }
   }
 </style>
+
+<!-- ─── MATRIX RAIN ANIMATION ──────────────────────────────────── -->
+<script>
+  (function () {
+    const canvas = document.getElementById('cv-matrix-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Character set: half-width katakana + digits + select Latin
+    const chars =
+      'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン' +
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+      '0123456789' +
+      '(){}[]<>@#$%&*+=';
+
+    const fontSize = 14;
+    let columns;
+    let drops;
+    let speeds;
+
+    function initMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = new Array(columns).fill(0).map(() => Math.random() * -100);
+      speeds = new Array(columns).fill(0).map(() => 0.3 + Math.random() * 0.7);
+    }
+
+    initMatrix();
+
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(initMatrix, 150);
+    });
+
+    function draw() {
+      // Semi-transparent dark overlay creates the trailing fade
+      ctx.fillStyle = 'rgba(6, 8, 15, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < columns; i++) {
+        const charIndex = Math.floor(Math.random() * chars.length);
+        const char = chars[charIndex];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // Leading character: bright white-cyan flash
+        if (Math.random() > 0.90) {
+          ctx.fillStyle = 'rgba(200, 240, 255, 0.95)';
+        } else if (i % 3 === 0) {
+          // Every 3rd column uses indigo for color variety
+          const intensity = 0.45 + Math.random() * 0.55;
+          ctx.fillStyle = `rgba(129, 140, 248, ${intensity})`;
+        } else {
+          // Primary cyan rain matching --cv-accent-cyan
+          const intensity = 0.45 + Math.random() * 0.55;
+          ctx.fillStyle = `rgba(34, 211, 238, ${intensity})`;
+        }
+
+        ctx.fillText(char, x, y);
+
+        // Reset column when it goes past the bottom, with some randomness
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = Math.random() * -20;
+          speeds[i] = 0.3 + Math.random() * 0.7;
+        }
+
+        drops[i] += speeds[i];
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    // Slight delay so the page paints first
+    setTimeout(draw, 100);
+  })();
+</script>
