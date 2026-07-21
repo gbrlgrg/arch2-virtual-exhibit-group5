@@ -1087,12 +1087,10 @@ const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
             {activeTab === 'canon' && (
               <>
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-                  <div className="text-slate-500 text-[11px] font-mono">
-                    This tab is reference-only — no live simulator.
-                  </div>
+                <div className="mb-4">
+                  <Scoreboard xp={xp} timeSaved={timeSaved} isLevelingUp={isLevelingUp} />
                 </div>
-                <ControllerExamMiniGame examState={miniGames.examState} setExamState={miniGames.setExamState} examTime={miniGames.examTime} startExam={miniGames.startExam} answerExam={miniGames.answerExam} />
+                <ControllerExamMiniGame examState={miniGames.examState} setExamState={miniGames.setExamState} examTime={miniGames.examTime} examIndex={miniGames.examIndex} startExam={miniGames.startExam} answerExam={miniGames.answerExam} />
               </>
             )}
           </div>

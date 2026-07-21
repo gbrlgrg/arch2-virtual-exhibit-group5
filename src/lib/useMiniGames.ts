@@ -29,6 +29,7 @@ export function useMiniGames(actions: SimulatorActions) {
   
   // Cache Controller Exam
   const [examState, setExamState] = useState<'idle'|'running'|'success'|'fail'>('idle');
+  const [examIndex, setExamIndex] = useState(0);
   const [examTime, setExamTime] = useState(5);
 
   // --- PHASE 1 RECOVERY: EXAM & OVERCLOCK HANDLERS ---
@@ -61,6 +62,7 @@ export function useMiniGames(actions: SimulatorActions) {
 
   const startExam = useCallback(() => {
     setExamState('running');
+    setExamIndex(0);
     setExamTime(5);
     
     if ((window as any).examTimer) clearInterval((window as any).examTimer);
@@ -105,6 +107,8 @@ export function useMiniGames(actions: SimulatorActions) {
     examState,
     setExamState,
     examTime,
+    examIndex,
+    setExamIndex,
     startExam,
     answerExam,
     triggerSimulation
