@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback } from 'react'
-import Particles from 'react-tsparticles'
-import { loadSlim } from 'tsparticles-slim'
-import type { Engine, Container, ISourceOptions } from 'tsparticles-engine'
+import Particles from '@tsparticles/react'
+import { loadSlim } from '@tsparticles/slim'
+import type { Engine, Container, ISourceOptions } from '@tsparticles/engine'
 import type { SimState } from './visualizer'
 
 type ParticleStreamProps = {
