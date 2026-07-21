@@ -506,7 +506,7 @@ function HitMissPopup({ state }: { state: SimState }) {
     'font-black tracking-tight select-none',
     isHit
       ? 'bg-gradient-to-br from-yellow-200 via-emerald-300 to-green-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]'
-      : 'bg-gradient-to-br from-red-400 via-orange-400 to-rose-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(239,68,68,0.5)]',
+      : 'bg-gradient-to-br from-red-400 via-indigo-400 to-rose-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(239,68,68,0.5)]',
   ].join(' ')
 
   const animClass = dismissing

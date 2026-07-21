@@ -276,9 +276,9 @@ export default function MuseumEngine() {
                   <span className="w-24 text-right font-mono text-slate-400 shrink-0">~3–10 ns</span>
                 </div>
                 <div className="flex items-center gap-2 text-[10px]">
-                  <span className="w-16 font-bold text-violet-400 shrink-0">L3 Cache</span>
+                  <span className="w-16 font-bold text-rose-400 shrink-0">L3 Cache</span>
                   <div className="flex-1 bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden">
-                    <div className="h-full rounded-full bg-violet-500/40" style={{ width: '75%' }} />
+                    <div className="h-full rounded-full bg-rose-500/40" style={{ width: '75%' }} />
                   </div>
                   <span className="w-24 text-right text-slate-500 shrink-0">4–64 MB</span>
                   <span className="w-24 text-right font-mono text-slate-400 shrink-0">~10–30 ns</span>
@@ -321,7 +321,7 @@ export default function MuseumEngine() {
                       <td className="px-2 py-2 text-emerald-400">8–16 way</td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-2 font-semibold text-violet-400">Apple M2</td>
+                      <td className="px-2 py-2 font-semibold text-rose-400">Apple M2</td>
                       <td className="px-2 py-2 text-slate-400">192+128 KB</td>
                       <td className="px-2 py-2 text-slate-400">16 MB</td>
                       <td className="px-2 py-2 text-slate-400">—</td>
@@ -510,7 +510,7 @@ export default function MuseumEngine() {
                       <td className="px-2 py-2 text-rose-400">Very High</td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-2 font-semibold text-violet-400">Fully Assoc.</td>
+                      <td className="px-2 py-2 font-semibold text-rose-400">Fully Assoc.</td>
                       <td className="px-2 py-2 text-slate-400">Any slot</td>
                       <td className="px-2 py-2 text-rose-400">Very High</td>
                       <td className="px-2 py-2 text-emerald-400">Zero</td>
@@ -546,7 +546,7 @@ export default function MuseumEngine() {
                       className={['px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all border',
                         replacementAlgo === algo
                           ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
-                          : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200 hover:border-slate-600'
+                          : 'bg-slate-900 text-slate-300 border-slate-700'
                       ].join(' ')}
                     >
                       {algo === 'lru' ? 'LRU' : algo === 'mru' ? 'MRU' : algo === 'fifo' ? 'FIFO' : 'Random'}
@@ -581,7 +581,7 @@ export default function MuseumEngine() {
                 {replacementAlgo === 'random' && (
                   <div className="space-y-2">
                     <p className="text-slate-300 leading-relaxed">
-                      <strong className="text-violet-400">Random Replacement</strong> — A pseudo-random number generator picks the victim. Near-zero hardware tracking overhead.
+                      <strong className="text-rose-400">Random Replacement</strong> — A pseudo-random number generator picks the victim. Near-zero hardware tracking overhead.
                     </p>
                     <p className="text-slate-400">Surprisingly effective: statistical analysis shows that as cache associativity grows (8-way, 16-way), Random's hit rate <strong>naturally converges to LRU's performance</strong> at a fraction of the hardware cost. Widely used in high-associativity enterprise server caches.</p>
                   </div>
@@ -607,7 +607,7 @@ export default function MuseumEngine() {
                       key={i}
                       onClick={() => setLruStep(i)}
                       className={['flex-1 py-1.5 rounded text-[10px] font-bold transition-all border',
-                        lruStep === i ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+                        lruStep === i ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-300'
                       ].join(' ')}
                     >
                       {step.request}
@@ -737,10 +737,10 @@ export default function MuseumEngine() {
               </p>
 
               {/* Patterson & Hennessy */}
-              <div className="bg-slate-900 border border-violet-800/40 rounded-xl p-4 space-y-2">
+              <div className="bg-slate-900 border border-rose-800/40 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-violet-400"></div>
-                  <h5 className="text-violet-300 font-bold">Patterson & Hennessy</h5>
+                  <h5 className="text-rose-300 font-bold">Patterson & Hennessy</h5>
                 </div>
                 <p className="text-slate-400 text-[10px] leading-relaxed">
                   <strong className="text-slate-200">David A. Patterson</strong> (UC Berkeley) and <strong className="text-slate-200">John L. Hennessy</strong> (Stanford) jointly pioneered the <strong>RISC architecture</strong>. Patterson created RAID storage; Hennessy led the commercial MIPS architecture. Both received the <strong className="text-amber-400">Turing Award</strong> — the Nobel Prize of computing.
@@ -749,12 +749,12 @@ export default function MuseumEngine() {
                   <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
                     <div className="text-[10px] font-bold text-white mb-0.5">Computer Organization and Design: The Hardware/Software Interface</div>
                     <div className="text-[10px] text-slate-500">5th ed. Morgan Kaufmann, 2014. — Formalizes AMAT math, Direct/Associative/Set-Associative mapping, RISC instruction sets.</div>
-                    <div className="font-mono text-[9px] text-violet-400 mt-1">D. A. Patterson and J. L. Hennessy, Morgan Kaufmann, 2014.</div>
+                    <div className="font-mono text-[9px] text-rose-400 mt-1">D. A. Patterson and J. L. Hennessy, Morgan Kaufmann, 2014.</div>
                   </div>
                   <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
                     <div className="text-[10px] font-bold text-white mb-0.5">Computer Architecture: A Quantitative Approach</div>
                     <div className="text-[10px] text-slate-500">6th ed. Morgan Kaufmann, 2017. — Advanced statistical validation of replacement policies, multiprocessor cache coherence, warehouse-scale computing.</div>
-                    <div className="font-mono text-[9px] text-violet-400 mt-1">J. L. Hennessy and D. A. Patterson, Morgan Kaufmann, 2017.</div>
+                    <div className="font-mono text-[9px] text-rose-400 mt-1">J. L. Hennessy and D. A. Patterson, Morgan Kaufmann, 2017.</div>
                   </div>
                 </div>
               </div>
@@ -787,11 +787,11 @@ export default function MuseumEngine() {
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     <tr>
-                      <td className="px-2 py-2 text-violet-400 font-semibold">Patterson &amp; Hennessy</td>
+                      <td className="px-2 py-2 text-rose-400 font-semibold">Patterson &amp; Hennessy</td>
                       <td className="px-2 py-2 text-slate-400">AMAT, Memory Hierarchies, RISC, Mapping</td>
                     </tr>
                     <tr>
-                      <td className="px-2 py-2 text-violet-400 font-semibold">Hennessy &amp; Patterson</td>
+                      <td className="px-2 py-2 text-rose-400 font-semibold">Hennessy &amp; Patterson</td>
                       <td className="px-2 py-2 text-slate-400">Replacement Statistics, Multiprocessor Caching</td>
                     </tr>
                     <tr>
@@ -836,7 +836,7 @@ export default function MuseumEngine() {
             </div>
             <button
               onClick={() => { setHits(0); setMisses(0) }}
-              className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-500 hover:text-slate-300 hover:border-slate-700 transition-all font-mono uppercase"
+              className="shrink-0 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] text-slate-300 transition-all font-mono uppercase"
             >
               Reset
             </button>
@@ -916,12 +916,12 @@ export default function MuseumEngine() {
 // ─── REUSABLE HELPERS ─────────────────────────────────────────────────────────
 
 function SectionTitle({ children, color }: { children: React.ReactNode; color: 'indigo'|'cyan'|'emerald'|'amber'|'violet' }) {
-  const c = { indigo: 'text-indigo-400', cyan: 'text-cyan-400', emerald: 'text-emerald-400', amber: 'text-amber-400', violet: 'text-violet-400' }
+  const c = { indigo: 'text-indigo-400', cyan: 'text-cyan-400', emerald: 'text-emerald-400', amber: 'text-amber-400', violet: 'text-rose-400' }
   return <h4 className={`${c[color]} font-bold text-sm mt-2 mb-1 flex items-center gap-2`}>{children}</h4>
 }
 
 function Hl({ children, color }: { children: React.ReactNode; color: 'cyan'|'rose'|'emerald'|'amber'|'violet' }) {
-  const c = { cyan: 'text-cyan-400', rose: 'text-rose-400', emerald: 'text-emerald-400', amber: 'text-amber-400', violet: 'text-violet-400' }
+  const c = { cyan: 'text-cyan-400', rose: 'text-rose-400', emerald: 'text-emerald-400', amber: 'text-amber-400', violet: 'text-rose-400' }
   return <strong className={c[color]}>{children}</strong>
 }
 
@@ -932,7 +932,7 @@ function Callout({ children, color, icon, label }: { children: React.ReactNode; 
     cyan:   'border-cyan-500/60 bg-cyan-500/5',
     emerald:'border-emerald-500/60 bg-emerald-500/5',
     amber:  'border-amber-500/60 bg-amber-500/5',
-    violet: 'border-violet-500/60 bg-violet-500/5',
+    violet: 'border-rose-500/60 bg-rose-500/5',
   }
   const labelStyles: Record<string, string> = {
     rose:   'text-rose-400',
@@ -940,7 +940,7 @@ function Callout({ children, color, icon, label }: { children: React.ReactNode; 
     cyan:   'text-cyan-400',
     emerald:'text-emerald-400',
     amber:  'text-amber-400',
-    violet: 'text-violet-400',
+    violet: 'text-rose-400',
   }
   return (
     <div className={`border-l-4 rounded-r-xl p-3 ${styles[color] ?? 'border-slate-700 bg-slate-900'}`}>
@@ -957,7 +957,7 @@ function TriggerButton({ label, sub, color, onClick }: { label: string; sub: str
   const chevron = { cyan: 'group-hover/btn:text-cyan-400', emerald: 'group-hover/btn:text-emerald-400', rose: 'group-hover/btn:text-rose-400', amber: 'group-hover/btn:text-amber-400' }
   return (
     <button
-      className="flex items-center justify-between w-full bg-slate-950 hover:bg-slate-900 transition-colors p-3 rounded-xl border border-slate-800 group/btn"
+      className="flex items-center justify-between w-full bg-slate-950 transition-colors p-3 rounded-xl border border-slate-800 group/btn"
       onClick={onClick}
     >
       <div className="text-left">
@@ -978,13 +978,13 @@ function TabButton({ id, label, icon, active, onClick, color }: {
     cyan:    'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
     emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
     amber:   'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    violet:  'text-violet-400 bg-violet-500/10 border-violet-500/30',
+    violet:  'text-rose-400 bg-rose-500/10 border-rose-500/30',
   }
   return (
     <button
       onClick={onClick}
       className={['flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 border text-left w-full',
-        active ? colorMap[color] : 'border-transparent hover:bg-slate-800/50 text-slate-500 hover:text-slate-200'
+        active ? colorMap[color] : 'border-transparent text-slate-300'
       ].join(' ')}
     >
       <div className={['p-1 rounded-lg', active ? 'bg-slate-900/60' : 'bg-transparent'].join(' ')}>
@@ -1108,7 +1108,7 @@ function MappingSimulator() {
   const colorClasses = {
     cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
     emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
-    violet: 'bg-violet-500/20 text-violet-400 border-violet-500/50',
+    violet: 'bg-rose-500/20 text-rose-400 border-rose-500/50',
   }
 
   return (
@@ -1155,14 +1155,14 @@ function MappingSimulator() {
       {/* Block picker */}
       <div className="flex items-center gap-2">
         <button onClick={() => setBlock(b => (b + MAP_TOTAL_BLOCKS - 1) % MAP_TOTAL_BLOCKS)}
-          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 font-bold">−</button>
+          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-bold">−</button>
         <div className="flex-1 grid grid-cols-8 gap-1">
           {Array.from({ length: MAP_TOTAL_BLOCKS }, (_, b) => (
             <button
               key={b}
               onClick={() => setBlock(b)}
               className={['py-1.5 rounded text-[10px] font-mono font-bold border transition-all',
-                b === block ? 'bg-white/10 border-white/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
+                b === block ? 'bg-white/10 border-white/40 text-white' : 'bg-slate-900 border-slate-800 text-slate-300'
               ].join(' ')}
             >
               {b}
@@ -1170,7 +1170,7 @@ function MappingSimulator() {
           ))}
         </div>
         <button onClick={() => setBlock(b => (b + 1) % MAP_TOTAL_BLOCKS)}
-          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-600 font-bold">+</button>
+          className="size-8 shrink-0 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-bold">+</button>
       </div>
 
       {/* Cache slots visualization */}
@@ -1206,7 +1206,7 @@ function MappingSimulator() {
       {/* Actions */}
       <div className="flex gap-2">
         <button onClick={() => runAccess(block)}
-          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 transition-all">
           Access Block {block}
         </button>
         <button onClick={runConflictDemo}
@@ -1214,7 +1214,7 @@ function MappingSimulator() {
           Conflict Demo (1→5→1→5)
         </button>
         <button onClick={reset}
-          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 transition-all font-mono uppercase">
           Reset
         </button>
       </div>
@@ -1348,7 +1348,7 @@ function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; o
     emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
     amber: 'bg-amber-500/20 text-amber-400 border-amber-500/50',
     cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
-    violet: 'bg-violet-500/20 text-violet-400 border-violet-500/50',
+    violet: 'bg-rose-500/20 text-rose-400 border-rose-500/50',
   }
 
   const totalOps = hits + misses
@@ -1435,7 +1435,7 @@ function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; o
           <button
             key={b}
             onClick={() => access(b, algo)}
-            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs hover:border-slate-600 hover:text-white transition-all"
+            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs transition-all"
           >
             {b}
           </button>
@@ -1445,7 +1445,7 @@ function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; o
       {/* Presets + reset */}
       <div className="flex gap-2">
         <button onClick={() => runPreset(['A', 'B', 'C', 'D', 'E', 'D', 'F'])}
-          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 transition-all">
           Fill Demo (A→B→C→D→E→D→F)
         </button>
         <button onClick={() => runPreset(['A', 'B', 'C', 'D', 'E', 'A', 'B'])}
@@ -1453,7 +1453,7 @@ function ReplacementSimulator({ algo, onAlgoChange }: { algo: ReplacementAlgo; o
           Cyclic Demo (A→B→C→D→E→A→B)
         </button>
         <button onClick={reset}
-          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 transition-all font-mono uppercase">
           Reset
         </button>
       </div>
@@ -1665,7 +1665,7 @@ function WritePolicySimulator() {
           <button
             key={b}
             onClick={() => write(b, policy, missPolicy)}
-            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs hover:border-slate-600 hover:text-white transition-all"
+            className="size-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-bold text-xs transition-all"
           >
             {b}
           </button>
@@ -1676,7 +1676,7 @@ function WritePolicySimulator() {
       {/* Presets + reset */}
       <div className="flex gap-2">
         <button onClick={() => runPreset('consolidate')}
-          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 hover:border-slate-600 transition-all">
+          className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] font-bold uppercase tracking-wide text-slate-200 transition-all">
           Consolidation Demo (write A×3)
         </button>
         <button onClick={() => runPreset('flush')}
@@ -1684,7 +1684,7 @@ function WritePolicySimulator() {
           Dirty Eviction Flush (A→E)
         </button>
         <button onClick={reset}
-          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-500 hover:text-slate-300 transition-all font-mono uppercase">
+          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 transition-all font-mono uppercase">
           Reset
         </button>
       </div>

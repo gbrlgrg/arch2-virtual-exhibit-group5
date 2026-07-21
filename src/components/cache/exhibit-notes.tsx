@@ -21,7 +21,7 @@ export function ExhibitNotes() {
 
       <Accordion defaultValue={['gap']} className="w-full">
         <AccordionItem value="gap" className="border-slate-800/60">
-          <AccordionTrigger className="text-sm text-slate-200 hover:text-cyan-300 hover:no-underline">
+          <AccordionTrigger className="text-sm text-slate-200 hover:no-underline">
             The Hardware Speed Gap
           </AccordionTrigger>
           <AccordionContent className="text-sm leading-relaxed text-slate-400">
@@ -34,7 +34,7 @@ export function ExhibitNotes() {
         </AccordionItem>
 
         <AccordionItem value="hitmiss" className="border-slate-800/60">
-          <AccordionTrigger className="text-sm text-slate-200 hover:text-cyan-300 hover:no-underline">
+          <AccordionTrigger className="text-sm text-slate-200 hover:no-underline">
             Cache Hits vs. Cache Misses
           </AccordionTrigger>
           <AccordionContent className="text-sm leading-relaxed text-slate-400">
@@ -48,7 +48,7 @@ export function ExhibitNotes() {
         </AccordionItem>
 
         <AccordionItem value="locality" className="border-slate-800/60 border-b-0">
-          <AccordionTrigger className="text-sm text-slate-200 hover:text-cyan-300 hover:no-underline">
+          <AccordionTrigger className="text-sm text-slate-200 hover:no-underline">
             Principle of Locality (Spatial &amp; Temporal)
           </AccordionTrigger>
           <AccordionContent className="text-sm leading-relaxed text-slate-400">
