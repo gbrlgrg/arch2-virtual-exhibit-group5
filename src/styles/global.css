@@ -44,6 +44,20 @@ body {
     min-height: 100vh;
 }
 
+/* Hyperlinks */
+a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(80, 118, 167, 0.4);
+    text-underline-offset: 3px;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #38567a;
+    text-decoration-color: #38567a;
+}
+
 /* Top header bar */
 
 .title,

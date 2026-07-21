@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Cpu, Search, Zap, ZapOff, ChevronRight, Check } from 'lucide-react'
 import type { AddressBreakdown } from '../../lib/cache-sim'
+import { useUISound } from '../../lib/useUISound'
 
 type ForceMode = 'auto' | 'hit' | 'miss'
 
@@ -31,6 +32,8 @@ export function SimulatorControls({
 }: SimulatorControlsProps) {
   const [value, setValue] = useState('0x1A4')
   const [animStep, setAnimStep] = useState(0)
+  
+  const { playHover } = useUISound()
 
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -114,6 +117,7 @@ export function SimulatorControls({
               <button
                 key={opt.id}
                 type="button"
+                onMouseEnter={playHover}
                 onClick={() => onForceModeChange(opt.id)}
                 className={[
                   'flex-1 rounded px-2 py-1.5 text-xs font-medium transition-all duration-300 active:scale-95',
@@ -136,6 +140,7 @@ export function SimulatorControls({
         <Button
           type="submit"
           disabled={isBusy}
+          onMouseEnter={playHover}
           className="group w-full bg-cyan-500/20 text-cyan-300 font-bold tracking-wide border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.15)] hover:bg-cyan-500/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] hover:-translate-y-0.5 active:scale-95 active:translate-y-0 transition-all duration-300 disabled:opacity-60 disabled:hover:translate-y-0 disabled:active:scale-100"
         >
           {isBusy ? (

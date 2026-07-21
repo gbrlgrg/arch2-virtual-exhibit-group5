@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Tilt from 'react-parallax-tilt'
 import { Card } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import {
@@ -8,6 +9,10 @@ import {
   Loader2, Search, Send,
 } from 'lucide-react'
 import { CACHE_ROWS, type CacheRow } from '../../lib/cache-sim'
+import { ParticleStream } from './ParticleStream'
+import { SpeedRace } from './SpeedRace'
+import { AnimatedConduit } from './AnimatedConduit'
+import { MicroscopeView } from './MicroscopeView'
 
 export type SimState = 'idle' | 'calculating' | 'hit' | 'miss'
 
@@ -17,15 +22,39 @@ type VisualizerProps = {
   cache: CacheRow[]
   activeIndex: number | null
   replacementAlgo?: 'lru' | 'mru' | 'fifo' | 'random'
+  optimizationCount?: number
 }
 
-export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo = 'lru' }: VisualizerProps) {
+export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo = 'lru', optimizationCount = 0 }: VisualizerProps) {
   const isHit = state === 'hit'
   const isMiss = state === 'miss'
   const isCalc = state === 'calculating'
 
   const topPathActive = isHit || isMiss || isCalc
   const bottomPathActive = isMiss
+
+  const [inspectedRow, setInspectedRow] = useState<CacheRow | null>(null)
+
+  // Increment on each new simulation to force particle re-burst
+  const [burstKey, setBurstKey] = useState(0)
+  const prevStateRef = useRef(state)
+  useEffect(() => {
+    if (prevStateRef.current !== state && state !== 'idle') {
+      setBurstKey(k => k + 1)
+    }
+    prevStateRef.current = state
+  }, [state])
+
+  // ── Tetris Optimization Animation ─────────────────────────────────────
+  const prevOptCountRef = useRef(optimizationCount)
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  useEffect(() => {
+    if (optimizationCount > prevOptCountRef.current) {
+      setIsOptimizing(true)
+      setTimeout(() => setIsOptimizing(false), 500)
+    }
+    prevOptCountRef.current = optimizationCount
+  }, [optimizationCount])
 
   // ── Eviction animation ────────────────────────────────────────────────
   const prevCacheRef = useRef<CacheRow[]>(cache)
@@ -133,7 +162,7 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
       </div>
 
       {/* ── HARDWARE DIAGRAM ────────────────────────────────────────── */}
-      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-6 gap-0">
+      <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/50 p-6 gap-0 relative overflow-hidden">
         <div className="flex flex-col items-center">
 
           {/* CPU BLOCK */}
@@ -146,17 +175,23 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
           />
 
           {/* CPU -> Cache connector */}
-          <Connector
-            active={topPathActive}
-            tone={isHit ? 'emerald' : isMiss ? 'amber' : 'cyan'}
-            label={connectorLabel}
-            subtitle={isCalc ? 'Transmitting address...' : isHit ? 'Data flowing back' : undefined}
-          />
+          <AnimatedConduit type="cpu-cache" state={state} />
 
-          {/* CACHE L1 BLOCK */}
+          {/* CACHE L1 BLOCK — wrapped with 3D tilt */}
+          <Tilt
+            tiltMaxAngleX={4}
+            tiltMaxAngleY={4}
+            glareEnable={true}
+            glareMaxOpacity={0.12}
+            glareColor="#22d3ee"
+            glarePosition="all"
+            scale={1.02}
+            transitionSpeed={1500}
+            className="w-full max-w-sm"
+          >
           <Card
             className={[
-              'w-full max-w-sm gap-3 p-4 transition-all duration-500',
+              'w-full gap-3 p-4 transition-all duration-500',
               isHit
                 ? 'border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
                 : isMiss
@@ -213,12 +248,14 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                 const isEvicting = evictedIndex === row.index
 
                 let cellClass: string
-                if (isEvicting) {
+                if (isOptimizing && row.valid) {
+                  cellClass = 'border-cyan-400/80 bg-cyan-500/30 text-cyan-200 animate-tetris-lock shadow-[0_0_20px_rgba(34,211,238,0.4)] z-20'
+                } else if (isEvicting) {
                   cellClass =
                     'border-rose-500/80 bg-rose-500/20 text-rose-200 shadow-[0_0_18px_rgba(239,68,68,0.55)] animate-hardware-shake exhibit-eviction-flash'
                 } else if (activeHit) {
                   cellClass =
-                    'border-emerald-400/70 bg-emerald-500/20 text-emerald-200 shadow-[0_0_14px_rgba(16,185,129,0.4)] animate-pulse'
+                    'border-emerald-400/70 bg-emerald-500/20 text-emerald-200 animate-cache-slot-pop'
                 } else if (activeMiss) {
                   cellClass =
                     'border-amber-400/70 bg-amber-500/15 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.35)] animate-pulse'
@@ -240,17 +277,24 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
                     aria-label={`Cache row ${row.index}, ${
                       row.valid ? 'occupied' : 'empty'
                     }${isEvicting ? ', evicting' : ''}${isChecking ? ', checking' : ''}`}
+                    onClick={() => row.valid && setInspectedRow(row)}
                     className={[
-                      'flex h-11 flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-all duration-500',
+                      'relative group flex h-11 flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-all duration-500',
+                      row.valid ? 'cursor-pointer hover:scale-105 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:z-10' : '',
                       cellClass,
                     ].join(' ')}
                   >
-                    <span className="opacity-60">#{row.index}</span>
-                    <span>
+                    <span className="opacity-60 relative z-10">#{row.index}</span>
+                    <span className="relative z-10">
                       {row.valid && row.tag !== null
                         ? '0x' + row.tag.toString(16).toUpperCase()
                         : '—'}
                     </span>
+                    {row.valid && (
+                      <div className="absolute inset-0 bg-cyan-500/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-md pointer-events-none">
+                        <Search className="size-4 text-cyan-300 drop-shadow-[0_0_5px_rgba(34,211,238,1)]" />
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -262,20 +306,26 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
               <span className="text-rose-500/70">crimson = eviction</span>
             </p>
           </Card>
+          </Tilt>
 
           {/* Cache -> RAM connector */}
-          <Connector
-            active={bottomPathActive}
-            tone={isMiss ? 'amber' : 'slate'}
-            label={isMiss ? 'MISS — fetch from RAM' : undefined}
-            subtitle={isMiss ? 'Block transfer in progress...' : undefined}
-            dimmed={!bottomPathActive}
-          />
+          <AnimatedConduit type="cache-ram" state={state} />
 
-          {/* MAIN MEMORY / RAM BLOCK */}
+          {/* MAIN MEMORY / RAM BLOCK — wrapped with 3D tilt */}
+          <Tilt
+            tiltMaxAngleX={4}
+            tiltMaxAngleY={4}
+            glareEnable={true}
+            glareMaxOpacity={isMiss ? 0.18 : 0.07}
+            glareColor={isMiss ? '#fbbf24' : '#94a3b8'}
+            glarePosition="all"
+            scale={isMiss ? 1.03 : 1.01}
+            transitionSpeed={1800}
+            className="w-full max-w-sm"
+          >
           <Card
             className={[
-              'w-full max-w-sm gap-2 p-4 transition-all duration-500',
+              'w-full gap-2 p-4 transition-all duration-500',
               isMiss
                 ? 'border-amber-500/50 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
                 : 'border-slate-800/60 bg-slate-950/40',
@@ -316,14 +366,23 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
               ))}
             </div>
           </Card>
+          </Tilt>
         </div>
       </Card>
+
+      {/* ── VISUAL SPEED RACE ─────────────────────────────────────────── */}
+      <SpeedRace state={state} />
 
       {/* ── STATUS DASHBOARD (now below the diagram) ────────────────── */}
       <StatusDashboard state={state} latency={latency} activeIndex={activeIndex} />
 
       {/* ── CANDY-CRUSH-STYLE HIT/MISS POPUP ─────────────────────── */}
       <HitMissPopup state={state} />
+
+      {/* ── MICROSCOPE MODE OVERLAY ────────────────────────────────── */}
+      {inspectedRow && (
+        <MicroscopeView row={inspectedRow} onClose={() => setInspectedRow(null)} />
+      )}
     </div>
   )
 }
