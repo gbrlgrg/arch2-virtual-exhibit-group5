@@ -321,6 +321,9 @@ export function Visualizer({ state, latency, cache, activeIndex, replacementAlgo
 
       {/* ── STATUS DASHBOARD (now below the diagram) ────────────────── */}
       <StatusDashboard state={state} latency={latency} activeIndex={activeIndex} />
+
+      {/* ── CANDY-CRUSH-STYLE HIT/MISS POPUP ─────────────────────── */}
+      <HitMissPopup state={state} />
     </div>
   )
 }
@@ -469,6 +472,60 @@ function HardwareBlock({
 // ---------------------------------------------------------------------------
 // Animated connector between blocks
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Candy-Crush-style HIT / MISS popup overlay
+// ---------------------------------------------------------------------------
+function HitMissPopup({ state }: { state: SimState }) {
+  const [popup, setPopup] = useState<'hit' | 'miss' | null>(null)
+  const [dismissing, setDismissing] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (state === 'hit' || state === 'miss') {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      setPopup(state)
+      setDismissing(false)
+      timerRef.current = setTimeout(() => {
+        setDismissing(true)
+        setTimeout(() => setPopup(null), 450)
+      }, 1000)
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [state])
+
+  if (!popup) return null
+
+  const isHit = popup === 'hit'
+
+  const baseClass =
+    'fixed inset-0 z-[9999] pointer-events-none flex items-center justify-center'
+
+  const textClass = [
+    'font-black tracking-tight select-none',
+    isHit
+      ? 'bg-gradient-to-br from-yellow-200 via-emerald-300 to-green-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]'
+      : 'bg-gradient-to-br from-red-400 via-orange-400 to-rose-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(239,68,68,0.5)]',
+  ].join(' ')
+
+  const animClass = dismissing
+    ? isHit
+      ? 'animate-popup-hit-dismiss'
+      : 'animate-popup-miss-dismiss'
+    : isHit
+      ? 'animate-popup-hit'
+      : 'animate-popup-miss'
+
+  return (
+    <div className={baseClass}>
+      <div className={`${textClass} text-[clamp(4.5rem,14vw,10rem)] ${animClass}`}>
+        {isHit ? 'HIT' : 'MISS'}
+      </div>
+    </div>
+  )
+}
+
 function Connector({
   active,
   tone,
