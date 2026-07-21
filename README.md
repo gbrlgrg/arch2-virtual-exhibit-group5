@@ -1,6 +1,6 @@
 # CSARCH2 Virtual Exhibit: Cache Memory Visualizer
 
-An interactive virtual exhibit demonstrating **Cache Memory Mechanisms (Hits, Misses, and Locality)** using **Astro**, **React**, and **Framer Motion**.
+Welcome to Ca-Ching!, an interactive web-based simulator demonstrating the fundamental operations, architecture, mapping functions, replacement algorithms, and write policies of computer cache memory. The application features a real-time hardware visualization engine that models data retrieval between a simulated CPU, cache slots, and main memory. Users can interact with various architectural mapping engines such as direct-mapping, set-associative, and fully associative cache structures. Our exhibit page includes interactive components and visualizers simulating cache replacement algorithms, write policies, and edge cases such as thrashing and power outages. Additionally, the platform has a live telemetry system tracking hit rates and execution cycles, plus a progression system awarding experience points based on user efficiency. A toggleable override mode applies a high-contrast, data-centric terminal aesthetic to the entire user interface.
 
 ---
 
