@@ -28,8 +28,6 @@ An interactive virtual exhibit demonstrating **Cache Memory Mechanisms (Hits, Mi
 
 ---
 
----
-
 # Final Documentation
 
 This section documents the complete development journey of the **CSARCH2 Virtual Exhibit: Cache Memory Visualizer**. Rather than only describing the final product, this documentation records how the project evolved from the initial proposal to the completed implementation, including the discussions, design decisions, technical breakthroughs, challenges encountered, and lessons learned throughout development.
