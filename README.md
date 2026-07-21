@@ -4,6 +4,30 @@ An interactive virtual exhibit demonstrating **Cache Memory Mechanisms (Hits, Mi
 
 ---
 
+# Group Information
+
+**Group Title:** Ca-Ching! (Group 5)
+
+---
+
+# Group Members
+
+| Name | Role |
+|------|------|
+| Barreo, Carlo Gabriel | Member |
+| Eleydo, Renzel Vince | Member |
+| Gregorio, Gaibril Kyle | Member |
+| Leano, Jeremy | Member |
+| Rebudiao, Daniel Christian | Member |
+
+---
+
+# Topic Theme
+
+## Caching! — How Cache Memory Works
+
+---
+
 ---
 
 # Final Documentation
@@ -604,30 +628,6 @@ To fully align with the project rubrics and feedback, our group made the followi
 
 - **Modernized Tech Stack**
   - Added **ReactJS** and **Framer Motion** to the Astro framework for smooth real-time animations and interactions.
-
----
-
-# Group Information
-
-**Group Title:** Ca-Ching! (Group 5)
-
----
-
-# Group Members
-
-| Name | Role |
-|------|------|
-| Barreo, Carlo Gabriel | Member |
-| Eleydo, Renzel Vince | Member |
-| Gregorio, Gaibril Kyle | Member |
-| Leano, Jeremy | Member |
-| Rebudiao, Daniel Christian | Member |
-
----
-
-# Topic Theme
-
-## Caching! — How Cache Memory Works
 
 ---
 
